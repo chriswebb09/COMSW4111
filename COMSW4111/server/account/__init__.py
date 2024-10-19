@@ -6,4 +6,4 @@ from flask import Blueprint
 bp: Blueprint = Blueprint('account', __name__)
 
 
-from COMSW4111.server.main import routes
+from COMSW4111.server.search import routes

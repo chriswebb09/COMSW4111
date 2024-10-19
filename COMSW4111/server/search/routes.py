@@ -14,5 +14,5 @@ def before_request():
 
 
 @bp.route('/search', methods=['GET', 'POST'])
-def home():
+def search():
     return render_template('search.html', title='Search')

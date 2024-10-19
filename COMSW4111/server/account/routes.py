@@ -14,5 +14,5 @@ def before_request():
 
 
 @bp.route('/account', methods=['GET', 'POST'])
-def home():
+def account():
     return render_template('account.html', title='Account')
