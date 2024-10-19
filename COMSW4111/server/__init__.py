@@ -29,6 +29,8 @@ def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
     from COMSW4111.server.main import bp as main_bp
     app.register_blueprint(main_bp)
+    from COMSW4111.server.auth import bp as auth_bp
+    app.register_blueprint(auth_bp)
     login_manager.init_app(app)
     app.config.from_object(config_class)
     return app

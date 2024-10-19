@@ -16,7 +16,7 @@ def web_browser():
 
 
 @click.command()
-@click.option("--url", default="http://127.0.0.1:5000", help="URL to open in the web browser")
+@click.option("--url", default="http://127.0.0.1:8111", help="URL to open in the web browser")
 def launch(url):
     """
     Launches the web browser and runs the app.
@@ -24,7 +24,7 @@ def launch(url):
     """
     click.launch(url)
     app = create_app()
-    app.run(host="0.0.0.0", port=8111, debug=True)
+    app.run(host="127.0.0.1", port=8111, debug=True)
 
 web_browser.add_command(launch)
 cli = click.CommandCollection(sources=[web_browser])
