@@ -31,6 +31,10 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     from COMSW4111.server.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
+    from COMSW4111.server.search import bp as search_bp
+    app.register_blueprint(search_bp)
+    from COMSW4111.server.account import bp as account_bp
+    app.register_blueprint(account_bp)
     login_manager.init_app(app)
     app.config.from_object(config_class)
     return app
