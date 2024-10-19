@@ -24,7 +24,7 @@ def launch(url):
     """
     click.launch(url)
     app = create_app()
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8111, debug=True)
 
 web_browser.add_command(launch)
 cli = click.CommandCollection(sources=[web_browser])
