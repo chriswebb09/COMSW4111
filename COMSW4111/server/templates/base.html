@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{% block title %}{% endblock %}</title>
+    {% block head %}
+    <title>{{title}}</title>
 
     <!-- meta tags-->
     <meta charset="utf-8"/>
@@ -18,6 +19,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
     {% block style %}{% endblock %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/main.css') }}">
+    {% endblock %}
 </head>
 <header class="sticky top-0 z-50">
     {% include "components/_navigation.html" %}

@@ -7,9 +7,9 @@ from COMSW4111.server.auth import bp
 
 @bp.route('/signup', methods=['POST', 'GET'])
 def signup():
-	return render_template('signup.html')
+	return render_template('signup.html', title="Sign Up")
 
 
 @bp.route('/login', methods=['POST', 'GET'])
 def login():
-	return render_template('login.html')
+	return render_template('login.html', title="Login")
