@@ -16,18 +16,16 @@ def web_browser():
 
 
 @click.command()
-@click.option("--url", default="http://127.0.0.1:8111", help="URL to open in the web browser")
 def launch(url):
     """
     Launches the web browser and runs the app.
     :param url: The URL to open in the web browser.
     """
-    click.launch(url)
     app = create_app()
     app.run(host="0.0.0.0", port=8111, debug=True)
 
 @click.command()
-@click.option("--url", default="http://0.0.0.0:8111", help="Local Dev")
+@click.option("--url", default="http://127.0.0.1:8111", help="Local Dev")
 def local(url):
     """
     Launches the web browser and runs the app.
