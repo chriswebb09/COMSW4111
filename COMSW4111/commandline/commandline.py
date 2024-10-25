@@ -24,9 +24,21 @@ def launch(url):
     """
     click.launch(url)
     app = create_app()
+    app.run(host="0.0.0.0", port=8111, debug=True)
+
+@click.command()
+@click.option("--url", default="http://0.0.0.0:8111", help="Local Dev")
+def local(url):
+    """
+    Launches the web browser and runs the app.
+    :param url: The URL to open in the web browser.
+    """
+    click.launch(url)
+    app = create_app()
     app.run(host="127.0.0.1", port=8111, debug=True)
 
 web_browser.add_command(launch)
+web_browser.add_command(local)
 cli = click.CommandCollection(sources=[web_browser])
 
 if __name__ == '__main__':
