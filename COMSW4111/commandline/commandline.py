@@ -16,7 +16,7 @@ def web_browser():
 
 
 @click.command()
-def launch(url):
+def launch():
     """
     Launches the web browser and runs the app.
     :param url: The URL to open in the web browser.
