@@ -6,7 +6,11 @@ from flask_login import login_required, current_user
 from COMSW4111.data_models.PRUser import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
-from COMSW4111.data_models.PRUser import db, PRUser, Account, Seller, Buyer, Admin, BankAccount, CreditCard
+from COMSW4111.data_models.PRUser import db, PRUser, Admin, CreditCard
+from COMSW4111.data_models.account import Account
+from COMSW4111.data_models.bank_account import BankAccount
+from COMSW4111.data_models.buyer import Buyer
+from COMSW4111.data_models.seller import Seller
 from COMSW4111.server.app import check_account_status
 from COMSW4111.server.account import bp
 

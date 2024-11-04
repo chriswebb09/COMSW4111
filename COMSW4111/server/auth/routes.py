@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 # from werkzeug.urls import url_parse
+import uuid
 from COMSW4111.data_models.PRUser import PRUser
 from COMSW4111.data_models.PRUser import db
 from datetime import datetime
@@ -57,6 +58,7 @@ def register():
 
 		# Create new user
 		new_user = PRUser(
+			user_id=str(uuid.uuid4()),
 			email=email,
 			first_name=request.form.get('first_name'),
 			last_name=request.form.get('last_name'),
