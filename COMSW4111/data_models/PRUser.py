@@ -15,7 +15,7 @@ db = SQLAlchemy()
 
 class PRUser(UserMixin, db.Model):
     __tablename__ = 'pruser'
-
+    session_id = db.Column(db.VARCHAR, primary_key=True)
     user_id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
