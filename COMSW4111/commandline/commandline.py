@@ -31,8 +31,8 @@ def local(url):
     Launches the web browser and runs the app.
     :param url: The URL to open in the web browser.
     """
-    click.launch(url)
     app = create_app()
+    click.launch(url)
     app.run(host="127.0.0.1", port=8111, debug=True)
 
 web_browser.add_command(launch)

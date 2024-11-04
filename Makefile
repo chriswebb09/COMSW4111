@@ -2,11 +2,18 @@
 # BUILD #
 #########
 develop:  ## install dependencies and build library
-	python3 -m pip install Flask -e .[develop]
+	python3 -m pip install Flask==2.2.2 -e .[develop]
+	python3 -m pip uninstall urllib3 .[develop]
+	python3 -m pip install urllib3==1.26.6 -e .[develop]
+	python3 -m pip install Werkzeug==2.0.2 -e .[develop]
 	python3 -m pip install requests -e .[develop]
 	python3 -m pip install Flask-Login -e .[develop]
 	python3 -m pip install flask_httpauth -e .[develop]
+	python3 -m pip install flask_migrate -e .[develop]
+	python3 -m pip install Flask-SQLAlchemy -e .[develop]
+	python3 -m pip install psycopg2 -e .[develop]
 	python3 -m pip install -e .[develop]
+#	python3 -m pip install --upgrade flask werkzeug flask-login .[develop]
 
 build:  ## build the python library
 	python3 setup.py build build_ext --inplace
