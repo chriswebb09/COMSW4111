@@ -3,6 +3,7 @@
 #########
 develop:  ## install dependencies and build library
 	python3 -m pip install Flask -e .[develop]
+	python3 -m pip install requests -e .[develop]
 	python3 -m pip install Flask-Login -e .[develop]
 	python3 -m pip install flask_httpauth -e .[develop]
 	python3 -m pip install -e .[develop]
