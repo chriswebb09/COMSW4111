@@ -1,10 +1,10 @@
 from sqlalchemy.dialects.postgresql import TEXT
-from COMSW4111.data_models.PRUser import db
+from COMSW4111.data_models import db
 
 class Location(db.Model):
     __tablename__ = 'location'
 
-    location_id = db.Column(db.Integer, primary_key=True)
+    location_id = db.Column(db.String(50), primary_key=True)
     longitude = db.Column(TEXT)
     latitude = db.Column(TEXT)
     zip_code = db.Column(db.String(15))

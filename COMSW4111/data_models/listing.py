@@ -1,11 +1,12 @@
 from sqlalchemy.dialects.postgresql import TEXT
-from COMSW4111.data_models.PRUser import db
+from sqlalchemy.types import DECIMAL
+from COMSW4111.data_models import db
 
 class Listing(db.Model):
     __tablename__ = 'listing'
 
-    listing_id = db.Column(db.Integer, primary_key=True)
-    seller_id = db.Column(db.Integer, db.ForeignKey('seller.seller_id'))
+    listing_id = db.Column(db.String(50), primary_key=True)
+    seller_id = db.Column(db.String(50), db.ForeignKey('seller.seller_id'))
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(TEXT)
     price = db.Column(DECIMAL(10, 2), nullable=False)
@@ -17,6 +18,7 @@ class Listing(db.Model):
 
     # Relationships
     transactions = db.relationship('Transaction', backref='listing', lazy=True)
+
 
 
 

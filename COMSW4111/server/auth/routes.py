@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-# from werkzeug.urls import url_parse
 import uuid
-from COMSW4111.data_models.PRUser import PRUser
-from COMSW4111.data_models.PRUser import db
+from COMSW4111.data_models import PRUser
+from COMSW4111.data_models import db
 from datetime import datetime
 from COMSW4111.server.auth import bp
 
@@ -19,7 +18,8 @@ def login():
 		remember = True if request.form.get('remember') else False
 
 		user = PRUser.query.filter_by(email=email).first()
-
+		print(user.password_hash)
+		print(password)
 		if user and user.check_password(password):
 			if user.acc_status == 'banned':
 				flash('This account has been banned.', 'error')
@@ -67,13 +67,13 @@ def register():
 			acc_status='active'
 		)
 		new_user.set_password(request.form.get('password'))
-
 		try:
 			db.session.add(new_user)
 			db.session.commit()
 			flash('Registration successful!', 'success')
 			return redirect(url_for('auth.login'))
 		except Exception as e:
+			print(e)
 			db.session.rollback()
 			flash('Registration failed. Please try again.', 'error')
 
