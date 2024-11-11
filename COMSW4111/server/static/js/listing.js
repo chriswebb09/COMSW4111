@@ -1,39 +1,5 @@
 const { useState, useEffect } = React;
 
-// Sample data matching the Listing model
-
-// const sampleListing = {
-//   listing_id: 1,
-//   seller_id: 101,
-//   title: "Modern Apartment in Downtown",
-//   description: "Beautiful 2-bedroom apartment featuring stunning city views, modern appliances, and an open floor plan. This recently renovated space includes hardwood floors throughout, a gourmet kitchen with stainless steel appliances, and a spacious master suite. The building offers 24/7 security, a fitness center, and a rooftop terrace.\n\nAmenities include:\n- In-unit washer and dryer\n- Central air conditioning\n- Underground parking\n- Pet-friendly\n- Storage unit included",
-//   price: 2500.00,
-//   list_image: "/api/placeholder/800/500",
-//   location_id: 1,
-//   meta_tag: "apartment, downtown, modern, luxury, pet-friendly",
-//   t_created: "2024-03-01T12:00:00",
-//   t_last_edit: "2024-03-01T14:30:00",
-//   // Additional sample data for the page
-//   seller: {
-//     name: "John Smith",
-//     rating: 4.8,
-//     responseTime: "within 1 hour",
-//     listings: 15
-//   },
-//   location: {
-//     address: "123 Main Street",
-//     city: "New York",
-//     state: "NY",
-//     zip: "10001"
-//   },
-//   additionalImages: [
-//     "/api/placeholder/400/300",
-//     "/api/placeholder/400/300",
-//     "/api/placeholder/400/300",
-//     "/api/placeholder/400/300"
-//   ]
-// };
-
 const ListingPage  = (reportDataElems) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);

@@ -1,35 +1,6 @@
 const { useState, useEffect } = React;
 
-// // Sample data structure matching the Listing model
-// const sampleListings = [
-//   {
-//     listing_id: 1,
-//     seller_id: 101,
-//     title: "Modern Apartment in Downtown",
-//     description: "Beautiful 2-bedroom apartment with city views",
-//     price: 2500.00,
-//     list_image: "/api/placeholder/400/300",
-//     location_id: 1,
-//     meta_tag: "apartment, downtown, modern",
-//     t_created: "2024-03-01T12:00:00",
-//     t_last_edit: "2024-03-01T14:30:00"
-//   },
-//   {
-//     listing_id: 2,
-//     seller_id: 102,
-//     title: "Cozy Studio Near Park",
-//     description: "Perfectly located studio apartment",
-//     price: 1800.00,
-//     list_image: "/api/placeholder/400/300",
-//     location_id: 2,
-//     meta_tag: "studio, park, cozy",
-//     t_created: "2024-03-02T10:00:00",
-//     t_last_edit: "2024-03-02T11:15:00"
-//   },
-//   // Add more sample listings as needed
-// ];
-
-const ProductListingPage = () => {
+const ListingsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState('all');
@@ -202,4 +173,4 @@ const ProductListingPage = () => {
 
 
 const domContainer = document.querySelector('#root');
-ReactDOM.render(<ProductListingPage/>, domContainer);
+ReactDOM.render(<ListingsPage />, domContainer);
