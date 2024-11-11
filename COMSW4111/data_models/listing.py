@@ -14,7 +14,7 @@ class Listing(db.Model):
     description = db.Column(TEXT)
     price = db.Column(DECIMAL(10, 2), nullable=False)
     list_image = db.Column(TEXT)
-    location_id = db.Column(db.Integer, db.ForeignKey('pr_location.location_id'))
+    location_id = db.Column(db.String(50), db.ForeignKey('pr_location.location_id'))
     meta_tag = db.Column(TEXT)
     t_created = db.Column(db.DateTime)
     t_last_edit = db.Column(db.DateTime)
