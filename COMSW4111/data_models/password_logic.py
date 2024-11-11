@@ -12,7 +12,6 @@ _os_alt_seps: list[str] = list(
     sep for sep in [os.sep, os.path.altsep] if sep is not None and sep != "/"
 )
 
-
 def gen_salt(length: int) -> str:
     """Generate a random string of SALT_CHARS with specified ``length``."""
     if length <= 0:
@@ -28,7 +27,7 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
     if method == "scrypt":
         if not args:
-            n = 2 ** 15
+            n = 2**15
             r = 8
             p = 1
         else:
@@ -70,7 +69,7 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
 
 def generate_password_hash(
-        password: str, method: str = "pbkdf2", salt_length: int = 16
+    password: str, method: str = "pbkdf2", salt_length: int = 16
 ) -> str:
     """Securely hash a password for storage. A password can be compared to a stored hash
     using :func:`check_password_hash`.
@@ -151,12 +150,12 @@ def safe_join(directory: str, *pathnames: str) -> str | None:
             filename = posixpath.normpath(filename)
 
         if (
-                any(sep in filename for sep in _os_alt_seps)
-                or os.path.isabs(filename)
-                # ntpath.isabs doesn't catch this on Python < 3.11
-                or filename.startswith("/")
-                or filename == ".."
-                or filename.startswith("../")
+            any(sep in filename for sep in _os_alt_seps)
+            or os.path.isabs(filename)
+            # ntpath.isabs doesn't catch this on Python < 3.11
+            or filename.startswith("/")
+            or filename == ".."
+            or filename.startswith("../")
         ):
             return None
 
