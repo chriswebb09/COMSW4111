@@ -9,4 +9,4 @@ class Buyer(db.Model):
     account_id = db.Column(db.String(50), db.ForeignKey('pr_account.account_id'))
 
     # Relationships
-    transactions = db.relationship('PR_Transaction', backref='pr_buyer', lazy=True)
+    transactions = db.relationship('Transaction', backref='pr_buyer', lazy=True)
