@@ -20,7 +20,7 @@ class Listing(db.Model):
     t_last_edit = db.Column(db.DateTime)
 
     # Relationships
-    transactions = db.relationship('PR_Transaction', backref='pr_listing', lazy=True)
+    transactions = db.relationship('Transaction', backref='pr_listing', lazy=True)
 
 
 
