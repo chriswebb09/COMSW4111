@@ -40,8 +40,13 @@ const ListingPage  = (reportDataElems) => {
             <div className="lg:col-span-2">
               {/* Main Image */}
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                <img
+                    src="../static/img/placeholder.png"
+                    alt={listing.title}
+                    className="w-full h-96 object-cover"
+                />
                 {/*<img*/}
-                {/*  src={selectedImage}*/}
+                {/*  <img src="../static/img/placeholder.png"*/}
                 {/*  alt={list.title}*/}
                 {/*  className="w-full h-96 object-cover"*/}
                 {/*/>*/}

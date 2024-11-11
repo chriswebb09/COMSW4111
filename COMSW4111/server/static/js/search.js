@@ -55,6 +55,15 @@ const ListingsPage = () => {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            <a href="/create_listing" className="block w-full sm:w-auto">
+              <button
+                  className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium text-lg flex items-center justify-center">
+                <span className="mr-2">+</span>
+                Create New Listing
+              </button>
+            </a>
+          </div>
           {/* Search and Filters */}
           <div className="mb-6 space-y-4">
             {/* Search Bar */}
@@ -100,9 +109,10 @@ const ListingsPage = () => {
           {/* Listings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredListings.map(listing => (
-                <div key={listing.listing_id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
+                <div key={listing.listing_id}
+                     className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
                   <img
-                      src={listing.list_image}
+                      src="../static/img/placeholder.png"
                       alt={listing.title}
                       className="w-full h-48 object-cover"
                   />
@@ -127,8 +137,9 @@ const ListingsPage = () => {
                       {listing.meta_tag && (
                           <div className="flex flex-wrap gap-2">
                             {listing.meta_tag.split(',').map((tag, index) => (
-                                <span key={index} className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
-                                  {tag.trim()}
+                                <span key={index}
+                                      className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                                  {tag.trim().replace("[", "").replace("]", "").replace("]", "").replace('"', "").replace('"', "")}
                                 </span>
                             ))}
                           </div>
@@ -168,6 +179,5 @@ const ListingsPage = () => {
 };
 
 
-
 const domContainer = document.querySelector('#root');
-ReactDOM.render(<ListingsPage />, domContainer);
+ReactDOM.render(<ListingsPage/>, domContainer);

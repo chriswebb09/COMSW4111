@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from flask import render_template, redirect, url_for, flash, request, session
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user
 import uuid
 from COMSW4111.data_models import PRUser
 from COMSW4111.data_models import Account
 from COMSW4111.data_models import db
 from datetime import datetime
 from COMSW4111.server.auth import bp
+
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,20 +23,12 @@ def login():
 			if user.acc_status == 'banned':
 				flash('This account has been banned.', 'error')
 				return redirect(url_for('auth.login'))
-
 			if user.acc_status == 'inactive':
 				flash('Please activate your account first.', 'error')
 				return redirect(url_for('auth.login'))
-
 			login_user(user, remember=remember)
 			session['id'] = user.user_id
 			user.t_last_act = datetime.utcnow()
-			db.session.commit()
-			next_page = request.args.get('next')
-			if not next_page or url_parse(next_page).netloc != '':
-				next_page = url_for('main.home')
-			return redirect(next_page)
-
 		flash('Invalid email or password', 'error')
 	return render_template('login.html')
 
@@ -44,11 +37,8 @@ def login():
 def register():
 	if current_user.is_authenticated:
 		return redirect("")
-
 	if request.method == 'POST':
 		email = request.form.get('email')
-
-		# Check if user already exists
 		user = PRUser.query.filter_by(email=email).first()
 		if user:
 			flash('Email address already exists', 'error')
