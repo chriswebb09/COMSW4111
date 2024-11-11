@@ -5,7 +5,6 @@ from COMSW4111.data_models import db
 
 class Account(db.Model):
     __tablename__ = 'account'
-
     account_id = db.Column(db.String(50), primary_key=True)
     user_id = db.Column(db.String(50), db.ForeignKey('pruser.user_id'))
     account_type = db.Column(db.String(50), db.CheckConstraint("account_type IN ('bank_account', 'credit_card')"))

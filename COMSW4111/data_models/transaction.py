@@ -5,7 +5,6 @@ from sqlalchemy.types import DECIMAL
 
 class Transaction(db.Model):
     __tablename__ = 'transaction'
-
     transaction_id = db.Column(db.String(50), primary_key=True)
     buyer_id = db.Column(db.String(50), db.ForeignKey('buyer.buyer_id'))
     seller_id = db.Column(db.String(50), db.ForeignKey('seller.seller_id'))
@@ -13,6 +12,4 @@ class Transaction(db.Model):
     t_date = db.Column(db.Date)
     agreed_price = db.Column(DECIMAL(10, 2), nullable=False)
     serv_fee = db.Column(DECIMAL(10, 2))
-    status = db.Column(db.String(20),
-                       db.CheckConstraint("status IN ('pending', 'confirming', 'confirmed', 'completed')"),
-                       nullable=False)
+    status = db.Column(db.String(20), db.CheckConstraint("status IN ('pending', 'confirming', 'confirmed', 'completed')"), nullable=False)

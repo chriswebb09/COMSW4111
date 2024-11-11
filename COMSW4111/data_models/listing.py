@@ -9,7 +9,7 @@ class Listing(db.Model):
 
     listing_id = db.Column(db.String(50), primary_key=True)
     seller_id = db.Column(db.String(50), db.ForeignKey('seller.seller_id'))
-    status = db.Column(db.String(50))
+    status = db.Column(db.String(50), db.CheckConstraint("status IN ('active', 'pending', 'closed', 'completed')"), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(TEXT)
     price = db.Column(DECIMAL(10, 2), nullable=False)

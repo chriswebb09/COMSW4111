@@ -34,6 +34,7 @@ def listing_page(listing_id):
                 "description": str(listing.__dict__["description"]),
                 "price": float(listing.__dict__["price"]),
                 "list_image": str(listing.__dict__["list_image"]),
+                "meta_tag": listing.__dict__["meta_tag"],
                 "location_id": str(listing.__dict__["location_id"])
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)

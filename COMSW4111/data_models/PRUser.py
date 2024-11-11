@@ -17,7 +17,6 @@ class PRUser(UserMixin, db.Model):
     t_created = db.Column(db.DateTime, default=datetime.utcnow)
     t_last_act = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     acc_status = db.Column(db.String(20), db.CheckConstraint("acc_status IN ('active', 'inactive', 'banned')"))
-
     # Relationships
     accounts = db.relationship('Account', backref='pruser', lazy=True)
     seller = db.relationship('Seller', backref='pruser', uselist=False, lazy=True)
@@ -32,6 +31,5 @@ class PRUser(UserMixin, db.Model):
 
     def check_password(self, password):
         self.password_hash = self.password_hash.strip()
-        print(self.password_hash)
         return check_password_hash(self.password_hash, password)
 

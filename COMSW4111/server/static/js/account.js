@@ -15,7 +15,12 @@ const AccountPage = () => {
   const [isAddingPayment, setIsAddingPayment] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [success, setSuccess] = useState(false);
   // Form State
   const [formData, setFormData] = useState({
     firstName: '',
@@ -48,6 +53,69 @@ const AccountPage = () => {
     // fetchAccountsData()
     // fetchBuyerStatus()
   }
+
+  const handlePasswordChange = (e) => {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value
+    });
+    setError('');
+    setSuccess(false);
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    // Basic validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError('New password must be at least 8 characters long');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/account/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update password');
+      }
+
+      setSuccess(true);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setIsEditing(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
 
   // Update form data when userData changes
   useEffect(() => {
@@ -552,6 +620,84 @@ const AccountPage = () => {
                         {isEditing ? 'Cancel' : 'Edit'}
                       </button>
                     </div>
+                    {isEditing ? (
+                        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Current Password
+                            </label>
+                            <input
+                                type="password"
+                                name="currentPassword"
+                                value={passwordData.currentPassword}
+                                onChange={handlePasswordChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter current password"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              New Password
+                            </label>
+                            <input
+                                type="password"
+                                name="newPassword"
+                                value={passwordData.newPassword}
+                                onChange={handlePasswordChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter new password"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Confirm New Password
+                            </label>
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={passwordData.confirmPassword}
+                                onChange={handlePasswordChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Confirm new password"
+                            />
+                          </div>
+
+                          {error && (
+                              <div className="text-red-600 text-sm">
+                                {error}
+                              </div>
+                          )}
+
+                          {success && (
+                              <div className="text-green-600 text-sm">
+                                Password successfully updated!
+                              </div>
+                          )}
+
+                          <div className="flex justify-end space-x-4">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-800"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              Update Password
+                            </button>
+                          </div>
+                        </form>
+                    ) : (
+                        <div className="text-gray-600">
+                          <p>Your password was last changed on: {new Date().toLocaleDateString()}</p>
+                          <p className="mt-2">Click "Change Password" to update your password.</p>
+                        </div>
+                    )}
                   </div>
               )}
               {activeTab === 'seller' && (
