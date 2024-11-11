@@ -13,6 +13,10 @@ from COMSW4111.data_models.listing import Listing
 from COMSW4111.data_models.admin import Admin
 
 
+@bp.route('/dispute', methods=['GET'])
+def get_disputed_transactions():
+    return render_template('dispute.html', title='Dispute')
+
 # Helper function to generate unique IDs
 def generate_unique_id(prefix):
     return f"{prefix}-{str(uuid.uuid4())[:8]}"
