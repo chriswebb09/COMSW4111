@@ -403,22 +403,12 @@ def get_user_accounts(user_id):
             else:
                 cc = credit_cards.pop()
                 account_info['details'] = {
-
                     'cc_num': f"****{cc.cc_num}",
                     'exp_date': datetime.utcnow().strftime('%m/%Y')
                 }
                 # print(account_info)
                 accounts_data.append(account_info)
-    print("here")
-    print(accounts_data)
     return accounts_data
-    # try:
-    #
-    #
-    # except Exception as e:
-    #     print("here 2")
-    #     print(f"Error fetching accounts: {str(e)}")
-    #     return None
 
 @bp.route('/account', methods=['GET', 'POST'])
 def account():

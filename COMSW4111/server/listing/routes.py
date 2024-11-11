@@ -36,28 +36,10 @@ def listing_page(listing_id):
                 "list_image": str(listing.__dict__["list_image"]),
                 "location_id": str(listing.__dict__["location_id"])
     }
-    # listing_data_json =  jsonify({
-    #         "listing_id": str(listing.__dict__['listing_id']),
-    #         "seller_id": str(listing.__dict__['seller_id']),
-    #         "status": str(listing.__dict__["status"]),
-    #         "title": str(listing.__dict__["title"]),
-    #         "description": str(listing.__dict__["description"]),
-    #         "price": float(listing.__dict__["price"]),
-    #         "list_image": str(listing.__dict__["list_image"]),
-    #         "location_id": str(listing.__dict__["location_id"])
-    #     })
-    # print(listing_data_json.__dict__)
-    # temp = json.dumps(listing_data_json)
-    #
     return render_template('listing.html', title='Listing', listing_data=list_data)
-
-# @bp.route('/listing', methods=['GET', 'POST'])
-# def listing():
-#     return render_template('listing.html', title='Listing')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 def ensure_seller_exists():
     """Ensure current user has a seller account, create if doesn't exist"""

@@ -10,15 +10,11 @@ const ListingPage  = (reportDataElems) => {
   useEffect(() => {
         const results = reportDataElems;
         printData(results);
-        // setListingData(reportDataElems);
-        // console.log(listingData)
     }, [reportDataElems]);
 
   function printData(reportDataElems) {
     const obj = JSON.parse(JSON.stringify(reportDataElems));
     setListingData(obj["reportDataElems"]);
-    console.log(obj);
-    console.log(listingData);
   }
 
   return (
@@ -34,8 +30,6 @@ const ListingPage  = (reportDataElems) => {
             <span className="mx-2">›</span>
             <span className="text-gray-900">{listingData.title}</span>
           </div>
-
-
         </div>
       </div>
 
@@ -81,6 +75,7 @@ const ListingPage  = (reportDataElems) => {
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{listingData.title}</h1>
               <div className="flex items-center justify-between mb-6">
                 <div className="text-2xl font-bold text-blue-600">
+                  {/*{listingData}*/}
                   {/*${listingData.price.toFixed(2)}/month*/}
                 </div>
                 <div className="text-gray-500 text-sm">
@@ -209,10 +204,3 @@ const ListingPage  = (reportDataElems) => {
     </div>
   );
 };
-
-// var listing_data = {{ listing_data }}
-// setListingData(listing_data);
-
-
-// const domContainer = document.querySelector('#root');
-// ReactDOM.render(<ListingPage/>, domContainer);
