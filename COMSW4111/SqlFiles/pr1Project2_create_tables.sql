@@ -52,14 +52,14 @@ CREATE TABLE BANKACCOUNT (
 	account_id VARCHAR(50) REFERENCES ACCOUNT(account_id),
 	bank_acc_num VARCHAR(30),
 	routing_num VARCHAR(50),
-	PRIMARY KEY(account_id)
+	PRIMARY KEY(bank_acc_num)
 );
 
 CREATE TABLE CREDITCARD(
 	account_id VARCHAR(50) REFERENCES ACCOUNT(account_id),
 	cc_num VARCHAR(30),
 	exp_date DATE,
-	PRIMARY KEY(account_id)
+	PRIMARY KEY(cc_num)
 );
 
 CREATE TABLE LOCATION (

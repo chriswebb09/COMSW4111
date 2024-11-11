@@ -37,6 +37,7 @@ def load_user_from_request(request):
 @login_manager.user_loader
 def load_user(id):
     return PRUser.query.get(id)
+            # .query.get(id))
 
 
 def create_app(config_class=Config):

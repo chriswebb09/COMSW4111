@@ -16,7 +16,6 @@ const RememberMe = () => {
 }
 
 const NameElement = (props) => {
-    console.log(props);
     return (
         <div>
             <label htmlFor={props.forHtml} className="block mb-2 text-sm font-semibold tracking-wider text-white dark:text-white">

@@ -8,9 +8,7 @@ class Account(db.Model):
 
     account_id = db.Column(db.String(50), primary_key=True)
     user_id = db.Column(db.String(50), db.ForeignKey('pruser.user_id'))
-    account_type = db.Column(db.String(50),
-                             db.CheckConstraint("account_type IN ('bank_account', 'credit_card')")
-                             )
+    account_type = db.Column(db.String(50), db.CheckConstraint("account_type IN ('bank_account', 'credit_card')"))
     billing_address = db.Column(TEXT, nullable=False)
 
     # Relationships

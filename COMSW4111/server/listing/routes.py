@@ -125,6 +125,7 @@ def create_listing():
         new_listing = Listing(
             listing_id=str(uuid.uuid4()),
             seller_id=seller.seller_id,
+            status="active",
             title=data['title'],
             description=data['description'],
             price=float(data['price']),

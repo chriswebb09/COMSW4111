@@ -32,5 +32,6 @@ class PRUser(UserMixin, db.Model):
 
     def check_password(self, password):
         self.password_hash = self.password_hash.strip()
+        print(self.password_hash)
         return check_password_hash(self.password_hash, password)
 
