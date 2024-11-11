@@ -11,8 +11,8 @@ class Account(db.Model):
     billing_address = db.Column(TEXT, nullable=False)
 
     # Relationships
-    bank_account = db.relationship('BankAccount', backref='pr_account', uselist=False, lazy=True)
-    credit_card = db.relationship('CreditCard', backref='pr_account', uselist=False, lazy=True)
-    seller = db.relationship('Seller', backref='pr_account', uselist=False, lazy=True)
-    buyer = db.relationship('Buyer', backref='pr_account', uselist=False, lazy=True)
+    bank_account = db.relationship('PR_BankAccount', backref='pr_account', uselist=False, lazy=True)
+    credit_card = db.relationship('PR_CreditCard', backref='pr_account', uselist=False, lazy=True)
+    seller = db.relationship('PR_Seller', backref='pr_account', uselist=False, lazy=True)
+    buyer = db.relationship('PR_Buyer', backref='pr_account', uselist=False, lazy=True)
 

@@ -14,4 +14,4 @@ class Location(db.Model):
     building_image = db.Column(TEXT)
 
     # Relationships
-    listings = db.relationship('Listing', backref='pr_location', lazy=True)
+    listings = db.relationship('PR_Listing', backref='pr_location', lazy=True)

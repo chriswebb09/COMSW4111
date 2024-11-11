@@ -7,5 +7,5 @@ class Seller(db.Model):
     seller_id = db.Column(db.String(50), db.ForeignKey('pr_user.user_id'), primary_key=True)
     account_id = db.Column(db.String(50), db.ForeignKey('pr_account.account_id'))
     # Relationships
-    listings = db.relationship('Listing', backref='pr_seller', lazy=True)
-    transactions = db.relationship('Transaction', backref='pr_seller', lazy=True)
+    listings = db.relationship('PR_Listing', backref='pr_seller', lazy=True)
+    transactions = db.relationship('PR_Transaction', backref='pr_seller', lazy=True)
