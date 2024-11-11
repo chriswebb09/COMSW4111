@@ -58,6 +58,8 @@ def create_app(config_class=Config):
     app.register_blueprint(listing_bp)
     from COMSW4111.server.transactions import bp as transactions_bp
     app.register_blueprint(transactions_bp)
+    from COMSW4111.server.dispute import bp as dispute_bp
+    app.register_blueprint(dispute_bp)
     # Initialize extensions
 
     migrate.init_app(app, db)
