@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import render_template, redirect, url_for, flash, request, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import uuid
 from COMSW4111.data_models import PRUser

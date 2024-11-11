@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from COMSW4111.data_models import db
 from sqlalchemy.types import DECIMAL
 
@@ -14,6 +16,3 @@ class Transaction(db.Model):
     status = db.Column(db.String(20),
                        db.CheckConstraint("status IN ('pending', 'confirming', 'confirmed', 'completed')"),
                        nullable=False)
-
-    # Relationships
-    # disputes = db.relationship('Dispute', backref='transaction', lazy=True)

@@ -104,7 +104,9 @@ const AccountPage = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
+      console.log("HERE")
       const response = await fetch('/api/account/profile');
+      console.log(response)
       if (!response.ok) throw new Error('Failed to fetch user data');
       const data = await response.json();
       setUserData(data);
@@ -349,4 +351,4 @@ const AccountPage = () => {
 };
 
 const domContainer = document.querySelector('#root');
-ReactDOM.render(<AccountPage userData={}/>, domContainer);
+ReactDOM.render(<AccountPage/>, domContainer);

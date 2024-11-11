@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-# account/routes.py
-from flask import Blueprint, jsonify, request, current_app, session
+from flask import jsonify, request, current_app, session, render_template
 from flask_login import login_required, current_user
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,7 +13,6 @@ from COMSW4111.data_models import Buyer
 from COMSW4111.data_models import Seller
 from COMSW4111.server.app import check_account_status
 from COMSW4111.server.account import bp
-
 
 @bp.route('/api/account/profile', methods=['GET'])
 # @login_required
@@ -55,6 +53,7 @@ def update_profile():
     """Update user profile information"""
     try:
         data = request.get_json()
+        print(current_user.user_id)
         user = PRUser.query.get(current_user.user_id)
 
         if not user:
@@ -280,20 +279,6 @@ def delete_account():
         db.session.rollback()
         current_app.logger.error(f"Error deactivating account: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
-
-
-from flask import render_template, session, request, redirect, json, jsonify
-from COMSW4111.server.account import bp
-from flask_login import LoginManager, current_user
-
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        pass
-    else:
-        pass
-
 
 @bp.route('/account', methods=['GET', 'POST'])
 def account():

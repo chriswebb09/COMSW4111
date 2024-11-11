@@ -1,5 +1,6 @@
-from COMSW4111.data_models import db
+#!/usr/bin/env python3
 
+from COMSW4111.data_models import db
 
 class Seller(db.Model):
     __tablename__ = 'seller'

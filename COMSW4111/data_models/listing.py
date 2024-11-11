@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from sqlalchemy.dialects.postgresql import TEXT
 from sqlalchemy.types import DECIMAL
 from COMSW4111.data_models import db

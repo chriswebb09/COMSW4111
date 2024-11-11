@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
+
 from COMSW4111.data_models import db
-from COMSW4111.data_models.dispute import Dispute
 
 class Admin(db.Model):
     __tablename__ = 'admin'

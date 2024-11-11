@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from COMSW4111.data_models import db
 
 class BankAccount(db.Model):
