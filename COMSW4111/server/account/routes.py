@@ -359,8 +359,6 @@ def get_accounts():
 
 def get_user_accounts(user_id):
     user = PRUser.query.get(current_user.user_id)
-    if not user:
-        return None
     accounts = Account.query.filter_by(user_id=user_id).all()
     accounts_data = []
     for account in accounts:
@@ -370,6 +368,7 @@ def get_user_accounts(user_id):
             'billing_address': account.billing_address,
             'details': None
         }
+        print(account_info)
         # Add specific details based on account type
         if account.account_type == 'bank_account':
             bank_accounts = BankAccount.query.filter_by(account_id=account.account_id).all()
@@ -377,8 +376,7 @@ def get_user_accounts(user_id):
                 continue
             else:
                 banko = bank_accounts.pop()
-                account_info['details'] = dict(bank_acc_num=f"****{banko.bank_acc_num}",
-                                               routing_num=f"****{banko.routing_num}")
+                account_info['details'] = dict(bank_acc_num=f"****{banko.bank_acc_num}", routing_num=f"****{banko.routing_num}")
                 accounts_data.append(account_info)
         elif account.account_type == 'credit_card':
             credit_cards = CreditCard.query.filter_by(account_id=account.account_id).all()
