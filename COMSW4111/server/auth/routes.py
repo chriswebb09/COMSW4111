@@ -3,6 +3,7 @@ from flask import render_template, redirect, url_for, flash, request, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import uuid
 from COMSW4111.data_models import PRUser
+from COMSW4111.data_models import Account
 from COMSW4111.data_models import db
 from datetime import datetime
 from COMSW4111.server.auth import bp
@@ -11,7 +12,6 @@ from COMSW4111.server.auth import bp
 def login():
 	if current_user.is_authenticated:
 		return redirect(url_for('account.account'))
-	print(request.method)
 	if request.method == 'POST':
 		email = request.form.get('email')
 		password = request.form.get('password')
@@ -26,12 +26,11 @@ def login():
 			if user.acc_status == 'inactive':
 				flash('Please activate your account first.', 'error')
 				return redirect(url_for('auth.login'))
+
 			login_user(user, remember=remember)
-			print(current_user)
-			print(current_user.is_authenticated)
+			session['id'] = user.user_id
 			user.t_last_act = datetime.utcnow()
 			db.session.commit()
-
 			next_page = request.args.get('next')
 			if not next_page or url_parse(next_page).netloc != '':
 				next_page = url_for('main.home')
@@ -54,10 +53,10 @@ def register():
 		if user:
 			flash('Email address already exists', 'error')
 			return redirect(url_for('auth.register'))
-
+		new_id = str(uuid.uuid4())
 		# Create new user
 		new_user = PRUser(
-			user_id=str(uuid.uuid4()),
+			user_id=new_id,
 			email=email,
 			first_name=request.form.get('first_name'),
 			last_name=request.form.get('last_name'),
@@ -66,7 +65,16 @@ def register():
 			acc_status='active'
 		)
 		new_user.set_password(request.form.get('password'))
+		# Create default account for user
+		account = Account(
+			account_id=str(uuid.uuid4()),
+			user_id=new_id,
+			account_type='bank_account',  # Default type
+			billing_address=request.form.get('address')  # Use same address as user
+		)
+
 		try:
+			db.session.add(account)
 			db.session.add(new_user)
 			db.session.commit()
 			flash('Registration successful!', 'success')
@@ -83,4 +91,5 @@ def register():
 @login_required
 def logout():
 	logout_user()
-	return redirect("account.html")
+	session.pop('id', None)
+	return redirect(url_for('auth.login'))

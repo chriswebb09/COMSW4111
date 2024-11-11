@@ -224,4 +224,4 @@ const ListingPage = () => {
 };
 
 const domContainer = document.querySelector('#root');
-ReactDOM.render(<ProductListingPage/>, domContainer);
+ReactDOM.render(<ListingPage/>, domContainer);

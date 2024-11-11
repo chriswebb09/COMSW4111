@@ -69,7 +69,7 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
 
 def generate_password_hash(
-    password: str, method: str = "scrypt", salt_length: int = 16
+    password: str, method: str = "pbkdf2", salt_length: int = 16
 ) -> str:
     """Securely hash a password for storage. A password can be compared to a stored hash
     using :func:`check_password_hash`.

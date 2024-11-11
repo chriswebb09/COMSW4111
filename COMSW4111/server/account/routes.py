@@ -53,7 +53,6 @@ def update_profile():
     """Update user profile information"""
     try:
         data = request.get_json()
-        print(current_user.user_id)
         user = PRUser.query.get(current_user.user_id)
 
         if not user:
