@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from . import db
 
 class PRUser(UserMixin, db.Model):
-    __tablename__ = 'pruser'
+    __tablename__ = 'pr_user'
     user_id = db.Column(db.String(50), primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
@@ -18,10 +18,10 @@ class PRUser(UserMixin, db.Model):
     t_last_act = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     acc_status = db.Column(db.String(20), db.CheckConstraint("acc_status IN ('active', 'inactive', 'banned')"))
     # Relationships
-    accounts = db.relationship('Account', backref='pruser', lazy=True)
-    seller = db.relationship('Seller', backref='pruser', uselist=False, lazy=True)
-    buyer = db.relationship('Buyer', backref='pruser', uselist=False, lazy=True)
-    admin = db.relationship('Admin', backref='pruser', uselist=False, lazy=True)
+    accounts = db.relationship('Account', backref='pr_user', lazy=True)
+    seller = db.relationship('Seller', backref='pr_user', uselist=False, lazy=True)
+    buyer = db.relationship('Buyer', backref='pr_user', uselist=False, lazy=True)
+    admin = db.relationship('Admin', backref='pr_user', uselist=False, lazy=True)
 
     def get_id(self):
         return self.user_id

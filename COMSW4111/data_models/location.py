@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import TEXT
 from COMSW4111.data_models import db
 
 class Location(db.Model):
-    __tablename__ = 'location'
+    __tablename__ = 'pr_location'
 
     location_id = db.Column(db.String(50), primary_key=True)
     longitude = db.Column(TEXT)
@@ -14,4 +14,4 @@ class Location(db.Model):
     building_image = db.Column(TEXT)
 
     # Relationships
-    listings = db.relationship('Listing', backref='location', lazy=True)
+    listings = db.relationship('Listing', backref='pr_location', lazy=True)
