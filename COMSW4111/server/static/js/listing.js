@@ -45,21 +45,16 @@ const ListingPage  = (reportDataElems) => {
                     alt={listing.title}
                     className="w-full h-96 object-cover"
                 />
-                {/*<img*/}
-                {/*  <img src="../static/img/placeholder.png"*/}
-                {/*  alt={list.title}*/}
-                {/*  className="w-full h-96 object-cover"*/}
-                {/*/>*/}
                 {/* Thumbnail Gallery */}
                 <div className="p-4 grid grid-cols-4 gap-2">
-                  {/*<img*/}
-                  {/*  src={listingData.list_image}*/}
-                  {/*  alt="Main view"*/}
-                  {/*  onClick={() => setSelectedImage(listingData.list_image)}*/}
-                  {/*  className={`w-full h-24 object-cover rounded cursor-pointer ${*/}
-                  {/*    selectedImage === sampleListing.list_image ? 'ring-2 ring-blue-500' : ''*/}
-                  {/*  }`}*/}
-                  {/*/>*/}
+                  <img
+                    src="../static/img/placeholder.png"
+                    alt="Main view"
+                    onClick={() => setSelectedImage("../static/img/placeholder.png")}
+                    className={`w-full h-24 object-cover rounded cursor-pointer ${
+                      selectedImage === listingData.list_image ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                  />
                   {/*{listingData.additionalImages.map((img, index) => (*/}
                   {/*  <img*/}
                   {/*    key={index}*/}
