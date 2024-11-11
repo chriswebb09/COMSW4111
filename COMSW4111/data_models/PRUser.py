@@ -18,10 +18,10 @@ class PRUser(UserMixin, db.Model):
     t_last_act = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     acc_status = db.Column(db.String(20), db.CheckConstraint("acc_status IN ('active', 'inactive', 'banned')"))
     # Relationships
-    accounts = db.relationship('PR_Account', backref='pr_user', lazy=True)
-    seller = db.relationship('PR_Seller', backref='pr_user', uselist=False, lazy=True)
-    buyer = db.relationship('PR_Buyer', backref='pr_user', uselist=False, lazy=True)
-    admin = db.relationship('PR_Admin', backref='pr_user', uselist=False, lazy=True)
+    accounts = db.relationship('Account', backref='pr_user', lazy=True)
+    seller = db.relationship('Seller', backref='pr_user', uselist=False, lazy=True)
+    buyer = db.relationship('Buyer', backref='pr_user', uselist=False, lazy=True)
+    admin = db.relationship('Admin', backref='pr_user', uselist=False, lazy=True)
 
     def get_id(self):
         return self.user_id
