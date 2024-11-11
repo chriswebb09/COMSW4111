@@ -13,5 +13,5 @@ class Dispute(db.Model):
     resolution_date = db.Column(db.Date)
 
     # Relationships
-    transaction = db.relationship('PR_Transaction', backref='pr_disputes', lazy=True)
-    admin = db.relationship('PR_Admin', backref='pr_disputes', lazy=True)
+    transaction = db.relationship('Transaction', backref='pr_dispute', lazy=True)
+    admin = db.relationship('Admin', backref='pr_dispute', lazy=True)
