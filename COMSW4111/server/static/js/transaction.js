@@ -48,7 +48,7 @@ function TransactionPage() {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/transaction', {
+      const response = await fetch('/api/transaction/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
