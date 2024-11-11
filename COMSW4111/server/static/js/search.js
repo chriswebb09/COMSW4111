@@ -1,41 +1,63 @@
 const { useState, useEffect } = React;
 
-// Sample data structure matching the Listing model
-const sampleListings = [
-  {
-    listing_id: 1,
-    seller_id: 101,
-    title: "Modern Apartment in Downtown",
-    description: "Beautiful 2-bedroom apartment with city views",
-    price: 2500.00,
-    list_image: "/api/placeholder/400/300",
-    location_id: 1,
-    meta_tag: "apartment, downtown, modern",
-    t_created: "2024-03-01T12:00:00",
-    t_last_edit: "2024-03-01T14:30:00"
-  },
-  {
-    listing_id: 2,
-    seller_id: 102,
-    title: "Cozy Studio Near Park",
-    description: "Perfectly located studio apartment",
-    price: 1800.00,
-    list_image: "/api/placeholder/400/300",
-    location_id: 2,
-    meta_tag: "studio, park, cozy",
-    t_created: "2024-03-02T10:00:00",
-    t_last_edit: "2024-03-02T11:15:00"
-  },
-  // Add more sample listings as needed
-];
+// // Sample data structure matching the Listing model
+// const sampleListings = [
+//   {
+//     listing_id: 1,
+//     seller_id: 101,
+//     title: "Modern Apartment in Downtown",
+//     description: "Beautiful 2-bedroom apartment with city views",
+//     price: 2500.00,
+//     list_image: "/api/placeholder/400/300",
+//     location_id: 1,
+//     meta_tag: "apartment, downtown, modern",
+//     t_created: "2024-03-01T12:00:00",
+//     t_last_edit: "2024-03-01T14:30:00"
+//   },
+//   {
+//     listing_id: 2,
+//     seller_id: 102,
+//     title: "Cozy Studio Near Park",
+//     description: "Perfectly located studio apartment",
+//     price: 1800.00,
+//     list_image: "/api/placeholder/400/300",
+//     location_id: 2,
+//     meta_tag: "studio, park, cozy",
+//     t_created: "2024-03-02T10:00:00",
+//     t_last_edit: "2024-03-02T11:15:00"
+//   },
+//   // Add more sample listings as needed
+// ];
 
 const ProductListingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState('all');
+   const [listingsData, setListingsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+    useEffect(() => {
+    fetchListingData();
+  }, []);
+      const fetchListingData = async () => {
+    try {
+      const response = await fetch('/api/listing/search');
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      const data = await response.json();
+      console.log(data);
+      setListingsData(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   // Filter and sort functions
-  const filteredListings = sampleListings.filter(listing => {
+  const filteredListings = listingsData.filter(listing => {
     const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          listing.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPrice = priceRange === 'all' ||
@@ -145,9 +167,12 @@ const ProductListingPage = () => {
                   )}
                 </div>
 
-                <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
-                  View Details
-                </button>
+                <a href={`listing/${listing.listing_id}`} className="w-full">
+                  <button
+                      className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                    View Details
+                  </button>
+                </a>
               </div>
             </div>
           ))}
@@ -155,7 +180,7 @@ const ProductListingPage = () => {
 
         {/* No Results Message */}
         {filteredListings.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow mt-6">
+            <div className="text-center py-12 bg-white rounded-lg shadow mt-6">
             <p className="text-gray-500 text-lg">No listings found matching your criteria</p>
             <button
               onClick={() => {
@@ -173,6 +198,8 @@ const ProductListingPage = () => {
     </div>
   );
 };
+
+
 
 const domContainer = document.querySelector('#root');
 ReactDOM.render(<ProductListingPage/>, domContainer);

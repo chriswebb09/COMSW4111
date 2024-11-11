@@ -19,10 +19,41 @@ from sqlalchemy import exc
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/listing_images'
 
-@bp.route('/listings/<string:listing_id>', methods=['GET'])
-def get_listing_page(listing_id):
-    return render_template('listing.html', title='Create Listing')
+@bp.route('/listing/<string:listing_id>', methods=['GET'])
+def listing_page(listing_id):
+    print("listing_page")
+    print(listing_id)
 
+    listing = Listing.query.filter_by(listing_id=listing_id).first()
+    print(listing.__dict__)
+    list_data = {
+                "listing_id": str(listing.__dict__['listing_id']),
+                "seller_id": str(listing.__dict__['seller_id']),
+                "status": str(listing.__dict__["status"]),
+                "title": str(listing.__dict__["title"]),
+                "description": str(listing.__dict__["description"]),
+                "price": float(listing.__dict__["price"]),
+                "list_image": str(listing.__dict__["list_image"]),
+                "location_id": str(listing.__dict__["location_id"])
+    }
+    # listing_data_json =  jsonify({
+    #         "listing_id": str(listing.__dict__['listing_id']),
+    #         "seller_id": str(listing.__dict__['seller_id']),
+    #         "status": str(listing.__dict__["status"]),
+    #         "title": str(listing.__dict__["title"]),
+    #         "description": str(listing.__dict__["description"]),
+    #         "price": float(listing.__dict__["price"]),
+    #         "list_image": str(listing.__dict__["list_image"]),
+    #         "location_id": str(listing.__dict__["location_id"])
+    #     })
+    # print(listing_data_json.__dict__)
+    # temp = json.dumps(listing_data_json)
+    #
+    return render_template('listing.html', title='Listing', listing_data=list_data)
+
+# @bp.route('/listing', methods=['GET', 'POST'])
+# def listing():
+#     return render_template('listing.html', title='Listing')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -171,6 +202,7 @@ def get_listing(listing_id):
         return jsonify({
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
+            'status': listing.status,
             'title': listing.title,
             'description': listing.description,
             'price': float(listing.price),
@@ -201,6 +233,8 @@ def update_listing(listing_id):
             listing.title = data['title']
         if 'description' in data:
             listing.description = data['description']
+        if 'status' in data:
+            listing.status = data['status']
         if 'price' in data:
             listing.price = data['price']
         if 'list_image' in data:
@@ -254,33 +288,14 @@ def delete_listing(listing_id):
 
 @bp.route('/api/listing/search', methods=['GET'])
 def search_listings():
-    try:
-        # Get search parameters
-        title = request.args.get('title', '')
-        min_price = request.args.get('min_price', type=float)
-        max_price = request.args.get('max_price', type=float)
-        meta_tag = request.args.get('meta_tag', '')
-
-        # Build query
-        query = Listing.query
-
-        if title:
-            query = query.filter(Listing.title.ilike(f'%{title}%'))
-        if min_price is not None:
-            query = query.filter(Listing.price >= min_price)
-        if max_price is not None:
-            query = query.filter(Listing.price <= max_price)
-        if meta_tag:
-            query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
-
-        # Execute query
-        listings = query.all()
-
+    if request.args is None:
+        listings = Listing.query.all()
         # Format results
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
             'title': listing.title,
+            'status': listing.status,
             'description': listing.description,
             'price': float(listing.price),
             'list_image': listing.list_image,
@@ -291,12 +306,50 @@ def search_listings():
         } for listing in listings]
 
         return jsonify(results), 200
+    else:
+        try:
+            # Get search parameters
+            title = request.args.get('title', '')
+            min_price = request.args.get('min_price', type=float)
+            max_price = request.args.get('max_price', type=float)
+            meta_tag = request.args.get('meta_tag', '')
 
-    except Exception as e:
-        current_app.logger.error(f"Error searching listings: {str(e)}")
-        return jsonify({'error': 'Failed to search listings'}), 500
+            # Build query
+            query = Listing.query
+
+            if title:
+                query = query.filter(Listing.title.ilike(f'%{title}%'))
+            if min_price is not None:
+                query = query.filter(Listing.price >= min_price)
+            if max_price is not None:
+                query = query.filter(Listing.price <= max_price)
+            if meta_tag:
+                query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
+
+            # Execute query
+            listings = query.all()
+
+            # Format results
+            results = [{
+                'listing_id': listing.listing_id,
+                'seller_id': listing.seller_id,
+                'title': listing.title,
+                'status': listing.status,
+                'description': listing.description,
+                'price': float(listing.price),
+                'list_image': listing.list_image,
+                'location_id': listing.location_id,
+                'meta_tag': listing.meta_tag,
+                't_created': listing.t_created.isoformat(),
+                't_last_edit': listing.t_last_edit.isoformat()
+            } for listing in listings]
+
+            return jsonify(results), 200
+
+        except Exception as e:
+            current_app.logger.error(f"Error searching listings: {str(e)}")
+            return jsonify({'error': 'Failed to search listings'}), 500
 
 
-@bp.route('/listing', methods=['GET', 'POST'])
-def listing():
-    return render_template('listing.html', title='Listing')
+
+

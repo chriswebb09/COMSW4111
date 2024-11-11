@@ -3,6 +3,11 @@
     <main>
         <div id='root' className=''></div>
         <script type="text/babel" src="{{url_for('static', filename='js/listing.js')}}"></script>
+        <script type="text/babel">
+            var listing = {{listing_data|tojson|safe}}
+            const domContainer = document.querySelector('#root');
+            ReactDOM.render(<ListingPage reportDataElems={listing}/>, domContainer);
+        </script>
         <div class="mt-30 mb-30 h-60"></div>
     </main>
 {% endblock %}
