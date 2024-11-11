@@ -11,9 +11,6 @@ import os
 import posixpath
 import secrets
 
-
-# db = SQLAlchemy()
-
 class PRUser(UserMixin, db.Model):
     __tablename__ = 'pruser'
     user_id = db.Column(db.String(50), primary_key=True)
@@ -28,21 +25,22 @@ class PRUser(UserMixin, db.Model):
     acc_status = db.Column(db.String(20),
                            db.CheckConstraint("acc_status IN ('active', 'inactive', 'banned')"))
     # Relationships
-    accounts = db.relationship('Account', backref='user', lazy=True)
-    seller = db.relationship('Seller', backref='user', uselist=False, lazy=True)
-    buyer = db.relationship('Buyer', backref='user', uselist=False, lazy=True)
-    admin = db.relationship('Admin', backref='user', uselist=False, lazy=True)
+    accounts = db.relationship('Account', backref='pruser', lazy=True)
+    seller = db.relationship('Seller', backref='pruser', uselist=False, lazy=True)
+    buyer = db.relationship('Buyer', backref='pruser', uselist=False, lazy=True)
+    admin = db.relationship('Admin', backref='pruser', uselist=False, lazy=True)
+
+    def get_id(self):
+        return self.user_id
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        self.password_hash = self.password_hash.strip()
+        print(self.password_hash)
+        print(password)
         return check_password_hash(self.password_hash, password)
-
-
-
-
-
 
 
 SALT_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -68,7 +66,7 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
     if method == "scrypt":
         if not args:
-            n = 2 ** 15
+            n = 2**15
             r = 8
             p = 1
         else:
@@ -110,7 +108,7 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
 
 def generate_password_hash(
-        password: str, method: str = "pbkdf2", salt_length: int = 16
+    password: str, method: str = "scrypt", salt_length: int = 16
 ) -> str:
     """Securely hash a password for storage. A password can be compared to a stored hash
     using :func:`check_password_hash`.
@@ -191,12 +189,12 @@ def safe_join(directory: str, *pathnames: str) -> str | None:
             filename = posixpath.normpath(filename)
 
         if (
-                any(sep in filename for sep in _os_alt_seps)
-                or os.path.isabs(filename)
-                # ntpath.isabs doesn't catch this on Python < 3.11
-                or filename.startswith("/")
-                or filename == ".."
-                or filename.startswith("../")
+            any(sep in filename for sep in _os_alt_seps)
+            or os.path.isabs(filename)
+            # ntpath.isabs doesn't catch this on Python < 3.11
+            or filename.startswith("/")
+            or filename == ".."
+            or filename.startswith("../")
         ):
             return None
 

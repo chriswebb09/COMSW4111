@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import uuid
 from COMSW4111.data_models import PRUser
@@ -11,16 +11,14 @@ from COMSW4111.server.auth import bp
 def login():
 	if current_user.is_authenticated:
 		return redirect(url_for('account.account'))
-
+	print(request.method)
 	if request.method == 'POST':
 		email = request.form.get('email')
 		password = request.form.get('password')
 		remember = True if request.form.get('remember') else False
-
 		user = PRUser.query.filter_by(email=email).first()
-		print(user.password_hash)
-		print(password)
 		if user and user.check_password(password):
+			session.pop('id', None)
 			if user.acc_status == 'banned':
 				flash('This account has been banned.', 'error')
 				return redirect(url_for('auth.login'))
@@ -28,8 +26,9 @@ def login():
 			if user.acc_status == 'inactive':
 				flash('Please activate your account first.', 'error')
 				return redirect(url_for('auth.login'))
-
 			login_user(user, remember=remember)
+			print(current_user)
+			print(current_user.is_authenticated)
 			user.t_last_act = datetime.utcnow()
 			db.session.commit()
 
@@ -54,7 +53,7 @@ def register():
 		user = PRUser.query.filter_by(email=email).first()
 		if user:
 			flash('Email address already exists', 'error')
-			return redirect(url_for('auth.signup'))
+			return redirect(url_for('auth.register'))
 
 		# Create new user
 		new_user = PRUser(
@@ -85,18 +84,3 @@ def register():
 def logout():
 	logout_user()
 	return redirect("account.html")
-
-#
-# from flask import render_template, request, redirect, url_for, flash
-# from flask_login import login_user, login_required, logout_user, current_user
-# from werkzeug.security import generate_password_hash
-# from COMSW4111.server.auth import bp
-#
-# @bp.route('/signup', methods=['POST', 'GET'])
-# def signup():
-# 	return render_template('signup.html', title="Sign Up")
-#
-#
-# @bp.route('/login', methods=['POST', 'GET'])
-# def login():
-# 	return render_template('login.html', title="Login")
