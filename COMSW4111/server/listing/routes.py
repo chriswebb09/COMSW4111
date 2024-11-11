@@ -21,11 +21,7 @@ UPLOAD_FOLDER = 'static/listing_images'
 
 @bp.route('/listing/<string:listing_id>', methods=['GET'])
 def listing_page(listing_id):
-    print("listing_page")
-    print(listing_id)
-
     listing = Listing.query.filter_by(listing_id=listing_id).first()
-    print(listing.__dict__)
     list_data = {
                 "listing_id": str(listing.__dict__['listing_id']),
                 "seller_id": str(listing.__dict__['seller_id']),
@@ -35,6 +31,8 @@ def listing_page(listing_id):
                 "price": float(listing.__dict__["price"]),
                 "list_image": str(listing.__dict__["list_image"]),
                 "meta_tag": listing.__dict__["meta_tag"],
+                "t_created" : listing.__dict__["t_created"],
+                "t_last_edit" : listing.__dict__["t_last_edit"],
                 "location_id": str(listing.__dict__["location_id"])
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)
