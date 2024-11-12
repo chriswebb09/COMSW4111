@@ -45,7 +45,7 @@ def register():
 			return redirect(url_for('auth.register'))
 		new_id = str(uuid.uuid4())
 		# Create new user
-		new_user = PRUser(
+		new_user: PRUser = PRUser(
 			user_id=new_id,
 			email=email,
 			first_name=request.form.get('first_name'),

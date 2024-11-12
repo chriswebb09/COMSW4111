@@ -117,7 +117,7 @@ const CreateListingPage = () => {
             formDataToSend.append('price', formData.price.toString()); // Ensure price is string
             formDataToSend.append('meta_tags', JSON.stringify(formData.meta_tag.split(',').map(tag => tag.trim())));
 
-// Log each image being appended
+            // Log each image being appended
             formData.images.forEach((image, index) => {
                 console.log(`Appending image ${index}:`, image);
                 formDataToSend.append('images', image); // Changed to use consistent key name
@@ -126,7 +126,7 @@ const CreateListingPage = () => {
             formDataToSend.append('location', JSON.stringify(formData.location));
             formDataToSend.append('status', 'active');
 
-// Debug: Log the FormData contents
+            // Debug: Log the FormData contents
             for (let pair of formDataToSend.entries()) {
                 console.log(pair[0] + ': ' + pair[1]);
             }

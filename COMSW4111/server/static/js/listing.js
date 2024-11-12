@@ -18,7 +18,7 @@ const ListingPage  = (reportDataElems) => {
   }
 
   return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-[800px] bg-gray-50 pb-20">
         {/* Navigation Breadcrumb */}
         <div className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 py-3">
@@ -50,7 +50,7 @@ const ListingPage  = (reportDataElems) => {
                       src="../static/img/placeholder.png"
                       alt="Main view"
                       onClick={() => setSelectedImage("../static/img/placeholder.png")}
-                      className={`w-full h-24 object-cover rounded cursor-pointer ${
+                      className={`w-5/6 h-24 object-cover rounded cursor-pointer ${
                           selectedImage === listingData.list_image ? 'ring-2 ring-blue-500' : ''
                       }`}
                   />
@@ -80,7 +80,6 @@ const ListingPage  = (reportDataElems) => {
               </div>
 
               {/* Property Details */}
-
 
               <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">{listingData.title}</h1>
@@ -144,7 +143,7 @@ const ListingPage  = (reportDataElems) => {
                     </div>
                     <div className="ml-3">
                       <h3 className="font-semibold">{listingData.seller_name}</h3>
-                      <div className="text-sm text-gray-500">
+                      <div className="t ext-sm text-gray-500">
                         {/*★ {listingData.seller.rating} · {listingData.seller.listings} listings*/}
                       </div>
                     </div>
