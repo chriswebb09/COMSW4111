@@ -13,7 +13,11 @@ from COMSW4111.data_models import CreditCard
 from COMSW4111.data_models import Buyer
 from COMSW4111.data_models import Seller
 from COMSW4111.server.app import check_account_status
+from COMSW4111.data_models import Transaction
+from COMSW4111.data_models import Listing
 from COMSW4111.server.account import bp
+from sqlalchemy import func
+from sqlalchemy import desc
 
 
 @bp.route('/api/account/profile', methods=['GET'])
@@ -406,6 +410,172 @@ def get_user_accounts(user_id):
         accounts_data.append(account_info)
 
     return accounts_data
+
+
+@bp.route('/api/account/seller_list', methods=['GET'])
+@login_required
+def get_seller_list():
+    try:
+        # Verify user has a seller account
+        seller = current_user.seller
+        if not seller:
+            return jsonify({"error": "User is not a seller"}), 403
+
+        # Get all transactions where user is the seller
+        transactions = db.session.query(
+            Transaction,
+            Listing.title.label('listing_title'),
+            Listing.list_image.label('listing_image')
+        ).join(
+            Listing, Transaction.listing_id == Listing.listing_id
+        ).filter(
+            Transaction.seller_id == seller.seller_id
+        ).order_by(
+            desc(Transaction.t_date)
+        ).all()
+
+        # Calculate summary statistics
+        stats = db.session.query(
+            func.count(Transaction.transaction_id).label('total_transactions'),
+            func.sum(Transaction.agreed_price).label('total_sales'),
+            func.sum(Transaction.serv_fee).label('total_fees')
+        ).filter(
+            Transaction.seller_id == seller.seller_id,
+            Transaction.status == 'completed'
+        ).first()
+
+        # Calculate transactions per listing
+        sales_by_listing = db.session.query(
+            Listing.listing_id,
+            Listing.title,
+            func.count(Transaction.transaction_id).label('sale_count'),
+            func.sum(Transaction.agreed_price).label('total_amount')
+        ).join(
+            Transaction, Listing.listing_id == Transaction.listing_id
+        ).filter(
+            Transaction.seller_id == seller.seller_id,
+            Transaction.status == 'completed'
+        ).group_by(
+            Listing.listing_id,
+            Listing.title
+        ).all()
+
+        transaction_data = {
+            "summary": {
+                "total_transactions": stats.total_transactions or 0,
+                "total_sales": float(stats.total_sales or 0),
+                "total_fees": float(stats.total_fees or 0),
+                "net_earnings": float((stats.total_sales or 0) - (stats.total_fees or 0))
+            },
+            "transactions": [{
+                "transaction_id": tx.Transaction.transaction_id,
+                "date": tx.Transaction.t_date.strftime("%Y-%m-%d") if tx.Transaction.t_date else None,
+                "listing_id": tx.Transaction.listing_id,
+                "listing_title": tx.listing_title,
+                "listing_image": tx.listing_image,
+                "price": float(tx.Transaction.agreed_price),
+                "service_fee": float(tx.Transaction.serv_fee) if tx.Transaction.serv_fee else 0,
+                "net_amount": float(tx.Transaction.agreed_price) - float(tx.Transaction.serv_fee or 0),
+                "status": tx.Transaction.status
+            } for tx in transactions],
+            "sales_by_listing": [{
+                "listing_id": item.listing_id,
+                "listing_title": item.title,
+                "total_sales": item.sale_count,
+                "total_amount": float(item.total_amount or 0)
+            } for item in sales_by_listing]
+        }
+
+        # Group transactions by status
+        status_counts = {
+            'pending': 0,
+            'confirming': 0,
+            'confirmed': 0,
+            'completed': 0
+        }
+
+        for tx in transactions:
+            status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
+
+        transaction_data['status_summary'] = status_counts
+
+        return jsonify(transaction_data)
+
+    except Exception as e:
+        current_app.logger.error(f"Error in get_seller_transactions: {str(e)}")
+        return jsonify({"error": "Failed to fetch seller transactions"}), 500
+
+
+@bp.route('/api/account/buyer_list', methods=['GET'])
+@login_required
+def get_buyer_transactions():
+    try:
+        # Verify user has a buyer account
+        buyer = current_user.buyer
+        if not buyer:
+            return jsonify({"error": "User is not a buyer"}), 403
+
+        # Get all transactions where user is the buyer
+        transactions = db.session.query(
+            Transaction,
+            Listing.title.label('listing_title'),
+            Listing.list_image.label('listing_image')
+        ).join(
+            Listing, Transaction.listing_id == Listing.listing_id
+        ).filter(
+            Transaction.buyer_id == buyer.buyer_id
+        ).order_by(
+            desc(Transaction.t_date)
+        ).all()
+
+        # Calculate some summary statistics
+        stats = db.session.query(
+            func.count(Transaction.transaction_id).label('total_transactions'),
+            func.sum(Transaction.agreed_price).label('total_spent'),
+            func.sum(Transaction.serv_fee).label('total_fees')
+        ).filter(
+            Transaction.buyer_id == buyer.buyer_id,
+            Transaction.status == 'completed'
+        ).first()
+
+        transaction_data = {
+            "summary": {
+                "total_transactions": stats.total_transactions or 0,
+                "total_spent": float(stats.total_spent or 0),
+                "total_fees": float(stats.total_fees or 0)
+            },
+            "transactions": [{
+                "transaction_id": tx.Transaction.transaction_id,
+                "date": tx.Transaction.t_date.strftime("%Y-%m-%d") if tx.Transaction.t_date else None,
+                "listing_id": tx.Transaction.listing_id,
+                "listing_title": tx.listing_title,
+                "listing_image": tx.listing_image,
+                "price": float(tx.Transaction.agreed_price),
+                "service_fee": float(tx.Transaction.serv_fee) if tx.Transaction.serv_fee else 0,
+                "total_amount": float(tx.Transaction.agreed_price) + float(tx.Transaction.serv_fee or 0),
+                "status": tx.Transaction.status
+            } for tx in transactions]
+        }
+
+        # Group transactions by status
+        status_counts = {
+            'pending': 0,
+            'confirming': 0,
+            'confirmed': 0,
+            'completed': 0
+        }
+
+        for tx in transactions:
+            status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
+
+        transaction_data['status_summary'] = status_counts
+
+        return jsonify(transaction_data)
+
+    except Exception as e:
+        current_app.logger.error(f"Error in get_buyer_transactions: {str(e)}")
+        return jsonify({"error": "Failed to fetch buyer transactions"}), 500
+
 
 
 @bp.route('/account', methods=['GET', 'POST'])
