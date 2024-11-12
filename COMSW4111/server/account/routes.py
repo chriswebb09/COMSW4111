@@ -48,6 +48,7 @@ def get_profile():
         current_app.logger.error(f"Error fetching profile: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+
 @bp.route('/api/account/profile', methods=['PUT'])
 @login_required
 @check_account_status
@@ -88,37 +89,36 @@ def update_profile():
 def get_payment_methods():
     """Get user's payment methods"""
     try:
-        accounts = Account.query.filter_by(user_id=current_user.user_id).all()
-        payment_methods = []
+        query = db.session.query(Account, BankAccount, CreditCard).outerjoin(
+            BankAccount, Account.account_id == BankAccount.account_id
+        ).outerjoin(
+            CreditCard, Account.account_id == CreditCard.account_id
+        ).filter(
+            Account.user_id == current_user.user_id
+        )
 
-        for account in accounts:
-            method = {
+        payment_methods = [
+            {
                 'account_id': account.account_id,
                 'account_type': account.account_type,
                 'billing_address': account.billing_address,
-                'details': None
+                'details': {
+                    'bank_acc_num': f"****{bank_account.bank_acc_num}",
+                    'routing_num': f"****{bank_account.routing_num}"
+                } if account.account_type == 'bank_account' and bank_account else {
+                    'cc_num': f"****{credit_card.cc_num}",
+                    'exp_date': credit_card.exp_date
+                } if account.account_type == 'credit_card' and credit_card else None
             }
-
-            if account.account_type == 'bank_account':
-                bank_account = BankAccount.query.filter_by(account_id=account.account_id).first()
-                if bank_account:
-                    method['details'] = {
-                        'bank_acc_num': f"****{bank_account.bank_acc_num}",
-                        'routing_num': f"****{bank_account.routing_num}"
-                    }
-            elif account.account_type == 'credit_card':
-                credit_card = CreditCard.query.filter_by(account_id=account.account_id).first()
-                if credit_card:
-                    method['details'] = {
-                        'cc_num': f"****{credit_card.cc_num}",
-                        'exp_date': credit_card.exp_date
-                    }
-            payment_methods.append(method)
+            for account, bank_account, credit_card in query.all()
+        ]
 
         return jsonify(payment_methods), 200
+
     except Exception as e:
         current_app.logger.error(f"Error fetching payment methods: {str(e)}")
-        return jsonify({'error': 'Internal server error'}),
+        return jsonify({'error': 'Internal server error'}), 500
+
 
 def add_credit_card(account_id, cc_num):
     user = PRUser.query.get(current_user.user_id)
@@ -142,6 +142,7 @@ def add_credit_card(account_id, cc_num):
     session['anonymous_user_id'] = current_user.user_id
     print(f"Credit card for account {account_id} added successfully.")
 
+
 def add_bank_account(account_id, bank_account_num, routing_num):
     user = PRUser.query.get(current_user.user_id)
     new_account = Account(
@@ -163,6 +164,7 @@ def add_bank_account(account_id, bank_account_num, routing_num):
     db.session.commit()
     session['anonymous_user_id'] = current_user.user_id
     print(f"Bank account for account {account_id} added successfully.")
+
 
 @bp.route('/api/account/payment-methods', methods=['POST'])
 @login_required
@@ -336,6 +338,7 @@ def get_accounts():
     accounts = get_user_accounts(current_user.user_id)
     return jsonify({'accounts': accounts}), 200
 
+
 def get_user_accounts(user_id):
     user = PRUser.query.get(current_user.user_id)
     accounts = Account.query.filter_by(user_id=user_id).all()
@@ -368,6 +371,7 @@ def get_user_accounts(user_id):
         accounts_data.append(account_info)
 
     return accounts_data
+
 
 @bp.route('/account', methods=['GET', 'POST'])
 @login_required
