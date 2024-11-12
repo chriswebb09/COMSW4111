@@ -2,6 +2,7 @@ const {useState, useEffect} = React;
 
 const PaymentMethodsList = ({paymentMethods, onDelete}) => {
     const getLastFourDigits = (number) => {
+        console.log(number);
         if (!number) return '****';
         return number.slice(-4);
     };
@@ -20,9 +21,9 @@ const PaymentMethodsList = ({paymentMethods, onDelete}) => {
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
                     >
                         <div className="flex items-center space-x-4">
-                            {/*<div className={`text-md ${method.account_type === 'credit_card' ? 'text-grey-600' : 'text-black'}`}>*/}
-                            {/*    {method.account_type}*/}
-                            {/*</div>*/}
+                            <div className={`text-md ${method.account_type === 'credit_card' ? 'text-grey-600' : 'text-black'}`}>
+                                {method.account_type}
+                            </div>
 
                             <div>
                                 <div className="font-medium">
@@ -112,7 +113,7 @@ const PaymentForm = ({onSubmit, onCancel}) => {
             }
 
             const result = await response.json();
-            onSubmit(result);
+            // onSubmit(result);
         } catch (error) {
             console.error('Error adding payment method:', error);
         }
@@ -258,11 +259,9 @@ const PaymentMethodsTab = () => {
             const response = await fetch(`/api/account/payment-methods/${accountId}`, {
                 method: 'DELETE'
             });
-
             if (!response.ok) {
                 throw new Error('Failed to delete payment method');
             }
-
             fetchPaymentMethods();
         } catch (err) {
             setError(err.message);

@@ -7,6 +7,7 @@ from datetime import datetime
 import uuid
 from sqlalchemy import exc
 from COMSW4111.data_models import db
+from sqlalchemy import or_
 from COMSW4111.data_models.transaction import Transaction
 from COMSW4111.data_models.dispute import Dispute
 
@@ -24,13 +25,7 @@ def generate_unique_id(prefix):
 def get_transactions():
     try:
         # Get transactions based on user role
-        if current_user.buyer:
-            transactions = Transaction.query.filter_by(buyer_id=current_user.buyer.buyer_id).all()
-        elif current_user.seller:
-            transactions = Transaction.query.filter_by(seller_id=current_user.seller.seller_id).all()
-        else:
-            return jsonify({"error": "User is neither buyer nor seller"}), 400
-
+        transactions = get_user_transactions(current_user)
         transactions_list = []
         for t in transactions:
             transactions_list.append({
@@ -50,6 +45,19 @@ def get_transactions():
         current_app.logger.error(f"Error fetching transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch transactions"}), 500
 
+
+def get_user_transactions(current_user):
+    if not (current_user.buyer or current_user.seller):
+        return jsonify({"error": "User is neither buyer nor seller"}), 400
+
+    transactions = Transaction.query.filter(
+        or_(
+            Transaction.buyer_id == current_user.buyer.buyer_id if current_user.buyer else False,
+            Transaction.seller_id == current_user.seller.seller_id if current_user.seller else False
+        )
+    ).all()
+
+    return transactions
 
 @bp.route('/api/disputes', methods=['GET'])
 @login_required

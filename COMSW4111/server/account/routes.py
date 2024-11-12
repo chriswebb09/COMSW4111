@@ -219,7 +219,7 @@ def get_user_credit_cards(user_id):
         return None
 
 
-@bp.route('/api/account/payment-methods/<int:account_id>', methods=['DELETE'])
+@bp.route('/api/account/payment-methods/<string:account_id>', methods=['DELETE'])
 @login_required
 @check_account_status
 def delete_payment_method(account_id):
@@ -229,19 +229,15 @@ def delete_payment_method(account_id):
             account_id=account_id,
             user_id=current_user.user_id
         ).first()
-
         if not account:
             return jsonify({'error': 'Payment method not found'}), 404
-
         db.session.delete(account)
         db.session.commit()
-
         return jsonify({'message': 'Payment method deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error deleting payment method: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
 
 @bp.route('/api/account/seller_status', methods=['GET'])
 @login_required
@@ -339,11 +335,55 @@ def get_accounts():
     return jsonify({'accounts': accounts}), 200
 
 
-def get_user_accounts(user_id):
-    user = PRUser.query.get(current_user.user_id)
-    accounts = Account.query.filter_by(user_id=user_id).all()
-    accounts_data = []
+from sqlalchemy import case, or_
+from datetime import datetime
 
+def get_user_accounts(user_id):
+    # Subqueries for each account type's details
+    bank_details = (
+        BankAccount.query
+        .with_entities(
+            BankAccount.account_id,
+            BankAccount.bank_acc_num.label('bank_acc_num'),
+            BankAccount.routing_num.label('routing_num')
+        )
+        .subquery()
+    )
+
+    credit_details = (
+        CreditCard.query
+        .with_entities(
+            CreditCard.account_id,
+            CreditCard.cc_num.label('cc_num'),
+            CreditCard.exp_date.label('exp_date')
+        )
+        .subquery()
+    )
+
+    # Main query with conditional joins
+    accounts = (
+        Account.query
+        .outerjoin(bank_details,
+                   (Account.account_id == bank_details.c.account_id) &
+                   (Account.account_type == 'bank_account'))
+        .outerjoin(credit_details,
+                   (Account.account_id == credit_details.c.account_id) &
+                   (Account.account_type == 'credit_card'))
+        .with_entities(
+            Account.account_id,
+            Account.account_type,
+            Account.billing_address,
+            bank_details.c.bank_acc_num,
+            bank_details.c.routing_num,
+            credit_details.c.cc_num,
+            credit_details.c.exp_date
+        )
+        .filter(Account.user_id == user_id)
+        .all()
+    )
+
+    # Transform query results into the desired format
+    accounts_data = []
     for account in accounts:
         account_info = {
             'account_id': account.account_id,
@@ -352,22 +392,17 @@ def get_user_accounts(user_id):
             'details': None
         }
 
-        if account.account_type == 'bank_account':
-            bank_accounts = BankAccount.query.filter_by(account_id=account.account_id).all()
-            if bank_accounts:
-                banko = bank_accounts.pop()
-                account_info['details'] = {
-                    'bank_acc_num': f"****{banko.bank_acc_num}",
-                    'routing_num': f"****{banko.routing_num}"
-                }
-        elif account.account_type == 'credit_card':
-            credit_cards = CreditCard.query.filter_by(account_id=account.account_id).all()
-            if credit_cards:
-                cc = credit_cards.pop()
-                account_info['details'] = {
-                    'cc_num': f"****{cc.cc_num}",
-                    'exp_date': datetime.utcnow().strftime('%m/%Y')
-                }
+        if account.account_type == 'bank_account' and account.bank_acc_num:
+            account_info['details'] = {
+                'bank_acc_num': f"****{account.bank_acc_num[-4:]}",
+                'routing_num': f"****{account.routing_num[-4:]}"
+            }
+        elif account.account_type == 'credit_card' and account.cc_num:
+            account_info['details'] = {
+                'cc_num': f"****{account.cc_num[-4:]}",
+                'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
+            }
+
         accounts_data.append(account_info)
 
     return accounts_data
