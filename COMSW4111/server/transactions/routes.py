@@ -1,99 +1,75 @@
-from flask import Blueprint, request, jsonify, render_template
-from COMSW4111.data_models.transaction import Transaction
-from COMSW4111.server.transactions import bp
-from flask import current_app
+from flask import Blueprint, request, jsonify, render_template, current_app
 from flask_login import login_required, current_user
 from datetime import datetime
+from sqlalchemy import exc, and_, desc
+from COMSW4111.data_models import PRUser
+from COMSW4111.data_models import db, Account
+from COMSW4111.data_models.transaction import Transaction
 from COMSW4111.data_models.buyer import Buyer
 from COMSW4111.data_models.listing import Listing
-import uuid
-from sqlalchemy import exc
-from sqlalchemy import and_
-from COMSW4111.data_models import db, Account
+from COMSW4111.server.transactions import bp
 
+import uuid
 
 @bp.route('/transaction', methods=['GET'])
 @login_required
 def begin_transaction():
-    return render_template('transaction.html', title='Transactions')
+    return render_template('transaction.html', title='Transaction')
+
+
+@bp.route('/transactions_list', methods=['GET'])
+@login_required
+def transaction_list():
+    return render_template('transactions.html', title='Transaction')
 
 @bp.route('/api/transaction', methods=['POST'])
 @login_required
-def create_transaction():
+def post_new_transaction():
+    data = request.get_json()
+    print(data)
     try:
-        data = request.get_json()
+        listing = Listing.query.filter_by(listing_id=data['listing_id']).first()
+        account = Account.query.filter_by(user_id=current_user.user_id).first()
+        transaction_user = PRUser.query.get(current_user.user_id)
 
-        listing = (Listing.query
-                   .filter(
-            and_(
-                Listing.listing_id == data['listing_id'],
-                Listing.status == 'available'
+        transactions = Transaction.query.filter(and_(Transaction.listing_id == data['listing_id'], Transaction.buyer_id == current_user.user_id)).all()
+
+        if transactions:
+            print("transaction already exists")
+            return jsonify({"error": "Transactions already exist"}), 404
+        print(listing)
+        if listing.seller_id == current_user.user_id:
+            print("cannot buy own listing")
+            return jsonify({"error": "Cannot buy your own listing"}), 404
+
+        if account is None:
+            account = Account(
+                account_id=str(uuid.uuid4()),
+                user_id=current_user.user_id,
+                billing_address=transaction_user.address,
             )
-        ).first())
-
-        if not listing:
-            return jsonify({"error": "Listing not found or unavailable"}), 404
-
-        # Check if buyer exists first to avoid unnecessary transaction if we already have one
-        existing_buyer = Buyer.query.get(current_user.user_id)
-
-        if existing_buyer:
-            # Create transaction directly if buyer exists
-            new_transaction = Transaction(
-                transaction_id=str(uuid.uuid4()),
-                buyer_id=existing_buyer.buyer_id,
-                seller_id=listing.seller_id,
-                listing_id=listing.listing_id,
-                t_date=datetime.utcnow(),
-                agreed_price=data['agreed_price'],
-                serv_fee=data['serv_fee'],
-                status='pending'
-            )
-
-            listing.status = 'pending'
-            db.session.add(new_transaction)
+            db.session.add(account)
             db.session.commit()
 
-            return new_transaction
+        buyer = Buyer.query.get(current_user.user_id)
 
-        # Begin transaction only if we need to create a new buyer
-        try:
-            db.session.begin_nested()
-
-            # Get account for new buyer
-            account = Account.query.filter_by(user_id=current_user.user_id).first()
-
-            if not account:
-                return jsonify({"error": "No payment account found"}), 400
-
-            # Create new buyer
-            buyer = Buyer(
-                buyer_id=current_user.user_id,
-                account_id=account.account_id
-            )
+        if buyer is None:
+            buyer = Buyer(buyer_id=current_user.user_id, account_id=account.account_id)
             db.session.add(buyer)
 
-            # Create transaction
-            new_transaction = Transaction(
-                transaction_id=str(uuid.uuid4()),
-                buyer_id=buyer.buyer_id,
-                seller_id=listing.seller_id,
-                listing_id=listing.listing_id,
-                t_date=datetime.utcnow(),
-                agreed_price=data['agreed_price'],
-                serv_fee=data['serv_fee'],
-                status='pending'
-            )
-
-            listing.status = 'pending'
-            db.session.add(new_transaction)
-            db.session.commit()
-
-            return new_transaction
-
-        except Exception as e:
-            db.session.rollback()
-            raise e
+        new_transaction = Transaction(
+            transaction_id=str(uuid.uuid4()),
+            buyer_id=buyer.buyer_id,
+            seller_id=listing.seller_id,
+            listing_id=listing.listing_id,
+            t_date=datetime.utcnow(),
+            agreed_price=data['agreed_price'],
+            serv_fee=data['serv_fee'],
+            status='pending'
+        )
+        listing.status = 'pending'
+        db.session.add(new_transaction)
+        db.session.commit()
 
         return jsonify({
             'transaction_id': new_transaction.transaction_id,
@@ -107,12 +83,62 @@ def create_transaction():
         })
 
     except exc.SQLAlchemyError as e:
+        print(e)
         db.session.rollback()
         current_app.logger.error(f"Database error: {str(e)}")
         return jsonify({"error": "Database error occurred"}), 500
     except Exception as e:
+        print(e)
         current_app.logger.error(f"Error creating transaction: {str(e)}")
         return jsonify({"error": "Failed to create transaction"}), 500
+
+
+@bp.route('/api/transactions', methods=['GET'])
+def get_transactions():
+    try:
+        # Get query parameters for filtering
+        buyer_id = request.args.get('buyer_id')
+        seller_id = request.args.get('seller_id')
+        status = request.args.get('status')
+
+        # Start with base query
+        query = Transaction.query
+
+        # Apply filters if provided
+        if buyer_id:
+            query = query.filter(Transaction.buyer_id == buyer_id)
+        if seller_id:
+            query = query.filter(Transaction.seller_id == seller_id)
+        if status:
+            query = query.filter(Transaction.status == status)
+
+        # Order by date descending by default
+        query = query.order_by(desc(Transaction.t_date))
+
+        # Execute query and get results
+        transactions = query.all()
+
+        # Convert to list of dictionaries
+        transactions_list = [{
+            'transaction_id': t.transaction_id,
+            'buyer_id': t.buyer_id,
+            'seller_id': t.seller_id,
+            'listing_id': t.listing_id,
+            't_date': t.t_date.isoformat() if t.t_date else None,
+            'agreed_price': str(t.agreed_price),  # Convert Decimal to string
+            'serv_fee': str(t.serv_fee) if t.serv_fee else None,  # Handle nullable field
+            'status': t.status
+        } for t in transactions]
+
+        return jsonify(transactions_list)
+
+    except Exception as e:
+        # Log the error here if you have logging configured
+        return jsonify({
+            'error': 'Failed to fetch transactions',
+            'message': str(e)
+        }), 500
+
 
 @bp.route('/api/transaction/<transaction_id>', methods=['GET'])
 @login_required

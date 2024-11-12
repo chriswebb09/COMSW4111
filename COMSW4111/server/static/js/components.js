@@ -56,7 +56,7 @@ const PaymentMethodsList = ({paymentMethods, onDelete}) => {
                     </div>
                 ))
             ) : (
-                <div className="text-center py-6 text-gray-500">
+                <div className="text-center py-6 bg-gray-100 text-gray-500 rounded-lg">
                     No payment methods added yet.
                 </div>
             )}

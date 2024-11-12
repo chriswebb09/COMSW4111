@@ -267,11 +267,11 @@ const AccountPage = () => {
     if (!userData) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[670px] bg-gray-50">
             <div className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="max-w-7xl mx-auto px-4 py-5">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+                        <h1 className="text2xl font-bold text-gray-900">Account Settings</h1>
                         <div className="text-sm text-gray-500">
                             Member since {new Date(userData.t_created).toLocaleDateString()}
                         </div>
@@ -279,10 +279,10 @@ const AccountPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-4 py-6">
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-full md:w-64">
-                        <div className="bg-white rounded-lg shadow p-4">
+                        <div className="bg-white rounded-lg shadow p-4 rounded-lg">
                             <nav className="space-y-2">
                                 {[
                                     { id: 'profile', label: 'Profile' },
