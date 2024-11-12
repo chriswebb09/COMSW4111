@@ -141,9 +141,10 @@ const ListingPage  = (reportDataElems) => {
                       <div
                           className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">
                         {/*{listingData.seller.name.charAt(0)}*/}
+                        {listingData.seller_name}
                       </div>
                       <div className="ml-3">
-                        {/*<h3 className="font-semibold">s{listingData.seller.name}</h3>*/}
+                        <h3 className="font-semibold">{listingData.seller_name}</h3>
                         <div className="text-sm text-gray-500">
                           {/*★ {listingData.seller.rating} · {listingData.seller.listings} listings*/}
                         </div>

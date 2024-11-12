@@ -48,16 +48,15 @@ function TransactionPage() {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/transaction/start', {
+      const response = await fetch('/api/transaction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(transaction)
-        // body: JSON.stringify({
-        //   ...transaction,
-        //   ...formData
-        // }),
+        body: JSON.stringify({
+          ...transaction,
+          ...formData
+        }),
       });
 
       if (!response.ok) {

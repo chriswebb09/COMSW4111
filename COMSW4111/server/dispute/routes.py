@@ -54,50 +54,6 @@ def get_transactions():
         return jsonify({"error": "Failed to fetch transactions"}), 500
 
 
-@bp.route('/api/transaction', methods=['POST'])
-@login_required
-def create_transaction():
-    try:
-        data = request.get_json()
-
-        # Verify listing exists and is available
-        listing = Listing.query.get(data['listing_id'])
-        if not listing:
-            return jsonify({"error": "Listing not found"}), 404
-
-        # Create new transaction
-        new_transaction = Transaction(
-            transaction_id=generate_unique_id('txn'),
-            buyer_id=current_user.buyer.buyer_id if current_user.buyer else None,
-            seller_id=listing.seller_id,
-            listing_id=data['listing_id'],
-            t_date=datetime.strptime(data['t_date'], '%Y-%m-%d').date(),
-            agreed_price=data['agreed_price'],
-            serv_fee=data['serv_fee'],
-            status='pending'
-        )
-
-        db.session.add(new_transaction)
-        db.session.commit()
-
-        return jsonify({
-            'transaction_id': new_transaction.transaction_id,
-            'buyer_id': new_transaction.buyer_id,
-            'seller_id': new_transaction.seller_id,
-            'listing_id': new_transaction.listing_id,
-            't_date': new_transaction.t_date.strftime('%Y-%m-%d'),
-            'agreed_price': float(new_transaction.agreed_price),
-            'serv_fee': float(new_transaction.serv_fee),
-            'status': new_transaction.status
-        })
-
-    except exc.SQLAlchemyError as e:
-        db.session.rollback()
-        current_app.logger.error(f"Database error: {str(e)}")
-        return jsonify({"error": "Database error occurred"}), 500
-    except Exception as e:
-        current_app.logger.error(f"Error creating transaction: {str(e)}")
-        return jsonify({"error": "Failed to create transaction"}), 500
 
 
 # Dispute routes
