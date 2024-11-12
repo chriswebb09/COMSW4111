@@ -140,8 +140,8 @@ const CreateListingPage = () => {
                 body: formDataToSend
             }).then(res => {
                 res.json().then(json => {
-                     alert('Listing created successfully!');
-                     console.log(json)
+                    alert('Listing created successfully!');
+                    console.log(json)
                     let dataResponse = json
                     window.location.href = `/listing/${dataResponse.listing_id}`;
                     //Do stuff with json here
