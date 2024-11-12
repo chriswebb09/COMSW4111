@@ -54,20 +54,15 @@ def register():
 			phone_number=request.form.get('phone_number'),
 			acc_status='active'
 		)
+
 		new_user.set_password(request.form.get('password'))
-		# Create default account for user
-		account = Account(
-			account_id=str(uuid.uuid4()),
-			user_id=new_id,
-			account_type='bank_account',  # Default type
-			billing_address=request.form.get('address')  # Use same address as user
-		)
 
 		try:
-			db.session.add(account)
 			db.session.add(new_user)
 			db.session.commit()
 			flash('Registration successful!', 'success')
+			session["id"] = new_id
+			login_user(new_user, remember=True)
 			return redirect(url_for('auth.login'))
 		except Exception as e:
 			print(e)
