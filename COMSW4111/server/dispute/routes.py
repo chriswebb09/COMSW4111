@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from COMSW4111.server.dispute import bp
-from flask import Blueprint, request, jsonify, current_app
+from flask import request, jsonify, current_app, render_template
 from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
@@ -9,18 +9,15 @@ from sqlalchemy import exc
 from COMSW4111.data_models import db
 from COMSW4111.data_models.transaction import Transaction
 from COMSW4111.data_models.dispute import Dispute
-from COMSW4111.data_models.listing import Listing
-from COMSW4111.data_models.admin import Admin
-
 
 @bp.route('/dispute', methods=['GET'])
+@login_required
 def get_disputed_transactions():
     return render_template('dispute.html', title='Dispute')
 
 # Helper function to generate unique IDs
 def generate_unique_id(prefix):
     return f"{prefix}-{str(uuid.uuid4())[:8]}"
-
 
 @bp.route('/api/transactions', methods=['GET'])
 @login_required
@@ -52,12 +49,6 @@ def get_transactions():
     except Exception as e:
         current_app.logger.error(f"Error fetching transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch transactions"}), 500
-
-
-
-
-# Dispute routes
-disputes_bp = Blueprint('disputes', __name__)
 
 
 @bp.route('/api/disputes', methods=['GET'])

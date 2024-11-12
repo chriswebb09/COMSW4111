@@ -20,12 +20,12 @@ from COMSW4111.server.account import bp
 @login_required
 @check_account_status
 def get_profile():
-    """Get user profile information"""
     try:
         user = PRUser.query.get(current_user.user_id)
-        accounts_data = get_user_accounts(user.user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
+
+        accounts_data = get_user_accounts(user.user_id)
         user_data = {
             'user_id': user.user_id,
             'first_name': user.first_name,
@@ -36,21 +36,17 @@ def get_profile():
             't_created': user.t_created.isoformat(),
             't_last_act': user.t_last_act.isoformat(),
             'acc_status': user.acc_status,
-            'accounts': [],
+            'accounts': accounts_data,
             'roles': {
                 'is_seller': bool(user.seller),
                 'is_buyer': bool(user.buyer),
                 'is_admin': bool(user.admin)
             }
         }
-        user_data["accounts"] = accounts_data
-        print(user_data)
-        print(accounts_data)
         return jsonify(user_data), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching profile: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
 
 @bp.route('/api/account/profile', methods=['PUT'])
 @login_required
@@ -86,53 +82,45 @@ def update_profile():
         current_app.logger.error(f"Error updating profile: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account/payment-methods', methods=['GET'])
 @login_required
 @check_account_status
 def get_payment_methods():
     """Get user's payment methods"""
-    accounts = Account.query.filter_by(user_id=current_user.user_id).all()
-    print(accounts)
     try:
-
+        accounts = Account.query.filter_by(user_id=current_user.user_id).all()
         payment_methods = []
-        current_id = ""
+
         for account in accounts:
-            if current_id == "" or current_id != account.account_id:
-                bank_accounts = BankAccount.query.filter_by(account_id=account.account_id).all()
-                credit_cards = CreditCard.query.filter_by(account_id=account.account_id).all()
-            print(bank_accounts)
-            print(credit_cards)
             method = {
                 'account_id': account.account_id,
                 'account_type': account.account_type,
-                'billing_address': account.billing_address
+                'billing_address': account.billing_address,
+                'details': None
             }
 
             if account.account_type == 'bank_account':
-                banko = bank_accounts.pop()
-                method['details'] = {
-                    'bank_acc_num': f"****{banko.bank_acc_num}",
-                    'routing_num': f"****{banko.routing_num}"
-                }
+                bank_account = BankAccount.query.filter_by(account_id=account.account_id).first()
+                if bank_account:
+                    method['details'] = {
+                        'bank_acc_num': f"****{bank_account.bank_acc_num}",
+                        'routing_num': f"****{bank_account.routing_num}"
+                    }
             elif account.account_type == 'credit_card':
-                cc = credit_cards.pop()
-                method['details'] = {
-                    'cc_num': f"****{cc.cc_num}",
-                    'exp_date': cc.exp_date
-                }
+                credit_card = CreditCard.query.filter_by(account_id=account.account_id).first()
+                if credit_card:
+                    method['details'] = {
+                        'cc_num': f"****{credit_card.cc_num}",
+                        'exp_date': credit_card.exp_date
+                    }
             payment_methods.append(method)
-            current_id = account.account_id
 
         return jsonify(payment_methods), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching payment methods: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
-
+        return jsonify({'error': 'Internal server error'}),
 
 def add_credit_card(account_id, cc_num):
-    # Check if the account exists
     user = PRUser.query.get(current_user.user_id)
     new_account = Account(
         account_id=str(uuid.uuid4()),
@@ -140,49 +128,41 @@ def add_credit_card(account_id, cc_num):
         billing_address=user.address,
         account_type='credit_card'
     )
-    db.session.add(account)
-    db.session.flush()  # Get the account_id
+    db.session.add(new_account)
+    db.session.flush()
 
-    # Create a new CreditCard instance
     new_credit_card = CreditCard(
         account_id=new_account.account_id,
         cc_num=cc_num,
-        exp_date=datetime.datetime.strptime('24052010', '%d%m%Y').date()
+        exp_date=datetime.strptime('24052010', '%d%m%Y').date()
     )
 
-    # Add the new credit card to the session and commit
     db.session.add(new_credit_card)
     db.session.commit()
     session['anonymous_user_id'] = current_user.user_id
     print(f"Credit card for account {account_id} added successfully.")
 
-
 def add_bank_account(account_id, bank_account_num, routing_num):
-    # Check if the account exists
-    # account = Account.query.filter_by(account_id=account_id).first()
     user = PRUser.query.get(current_user.user_id)
     new_account = Account(
         account_id=str(uuid.uuid4()),
         user_id=current_user.user_id,
         billing_address=user.address,
         account_type='bank_account'
-
     )
-    db.session.add(account)
-    db.session.flush()  # Get the account_id
-    # Create a new CreditCard instance
+    db.session.add(new_account)
+    db.session.flush()
+
     new_bank_account = BankAccount(
         account_id=new_account.account_id,
         bank_acc_num=bank_account_num,
         routing_num=routing_num
     )
 
-    # Add the new credit card to the session and commit
     db.session.add(new_bank_account)
     db.session.commit()
     session['anonymous_user_id'] = current_user.user_id
     print(f"Bank account for account {account_id} added successfully.")
-
 
 @bp.route('/api/account/payment-methods', methods=['POST'])
 @login_required
@@ -356,11 +336,11 @@ def get_accounts():
     accounts = get_user_accounts(current_user.user_id)
     return jsonify({'accounts': accounts}), 200
 
-
 def get_user_accounts(user_id):
     user = PRUser.query.get(current_user.user_id)
     accounts = Account.query.filter_by(user_id=user_id).all()
     accounts_data = []
+
     for account in accounts:
         account_info = {
             'account_id': account.account_id,
@@ -368,30 +348,28 @@ def get_user_accounts(user_id):
             'billing_address': account.billing_address,
             'details': None
         }
-        print(account_info)
-        # Add specific details based on account type
+
         if account.account_type == 'bank_account':
             bank_accounts = BankAccount.query.filter_by(account_id=account.account_id).all()
-            if len(bank_accounts) == 0:
-                continue
-            else:
+            if bank_accounts:
                 banko = bank_accounts.pop()
-                account_info['details'] = dict(bank_acc_num=f"****{banko.bank_acc_num}", routing_num=f"****{banko.routing_num}")
-                accounts_data.append(account_info)
+                account_info['details'] = {
+                    'bank_acc_num': f"****{banko.bank_acc_num}",
+                    'routing_num': f"****{banko.routing_num}"
+                }
         elif account.account_type == 'credit_card':
             credit_cards = CreditCard.query.filter_by(account_id=account.account_id).all()
-            if len(credit_cards) == 0:
-                continue
-            else:
+            if credit_cards:
                 cc = credit_cards.pop()
                 account_info['details'] = {
                     'cc_num': f"****{cc.cc_num}",
                     'exp_date': datetime.utcnow().strftime('%m/%Y')
                 }
-                accounts_data.append(account_info)
+        accounts_data.append(account_info)
+
     return accounts_data
 
-
 @bp.route('/account', methods=['GET', 'POST'])
+@login_required
 def account():
     return render_template('account.html', title='Account')

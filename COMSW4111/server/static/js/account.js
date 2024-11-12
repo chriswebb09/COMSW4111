@@ -1,6 +1,5 @@
 const { useState, useEffect } = React;
 const AccountPage = () => {
-  // Main State
   const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
   const [accountsData, setAccountsData] = useState(null);
@@ -8,8 +7,6 @@ const AccountPage = () => {
   const [sellerData, setSellerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // UI State
   const [isEditing, setIsEditing] = useState(false);
   const [paymentType, setPaymentType] = useState(null);
   const [isAddingPayment, setIsAddingPayment] = useState(false);
@@ -21,7 +18,6 @@ const AccountPage = () => {
     confirmPassword: ''
   });
   const [success, setSuccess] = useState(false);
-  // Form State
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,8 +25,6 @@ const AccountPage = () => {
     phone: '',
     address: ''
   });
-
-  // Payment Form State
   const [paymentFormData, setPaymentFormData] = useState({
     type: 'credit_card',
     cardNumber: '',
@@ -41,18 +35,16 @@ const AccountPage = () => {
     billingAddress: ''
   });
 
-  // Fetch user data on component mount
   useEffect(() => {
     fetchUserData();
   }, []);
 
-
   const fetchBuyerSeller = async () => {
-    fetchSellerStatus()
-    // fetchPaymentData()
-    // fetchAccountsData()
-    // fetchBuyerStatus()
-  }
+    await fetchSellerStatus();
+    await fetchPaymentData();
+    await fetchAccountsData();
+    await fetchBuyerStatus();
+  };
 
   const handlePasswordChange = (e) => {
     setPasswordData({
@@ -70,7 +62,6 @@ const AccountPage = () => {
 
     const { currentPassword, newPassword, confirmPassword } = passwordData;
 
-    // Basic validation
     if (!currentPassword || !newPassword || !confirmPassword) {
       setError('All fields are required');
       return;
@@ -116,8 +107,6 @@ const AccountPage = () => {
     }
   };
 
-
-  // Update form data when userData changes
   useEffect(() => {
     if (userData) {
       setFormData({
@@ -130,14 +119,12 @@ const AccountPage = () => {
     }
   }, [userData]);
 
-  // API Calls
   const fetchUserData = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/account/profile');
       if (!response.ok) throw new Error('Failed to fetch user data');
       const data = await response.json();
-      console.log(data);
       setUserData(data);
     } catch (err) {
       setError(err.message);
@@ -149,13 +136,10 @@ const AccountPage = () => {
   const fetchAccountsData = async () => {
     try {
       setLoading(true);
-      console.log("HERE");
       const response = await fetch('/api/account');
-      console.log(response);
       if (!response.ok) throw new Error('Failed to fetch user data');
       const data = await response.json();
       setAccountsData(data);
-      console.log(data.accounts);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -166,9 +150,7 @@ const AccountPage = () => {
   const fetchBuyerStatus = async () => {
     try {
       setLoading(true);
-      console.log("HERE")
       const response = await fetch('/api/account/buyer_status');
-      console.log(response)
       if (!response.ok) throw new Error('Failed to fetch user data');
       const data = await response.json();
       setBuyerData(data);
@@ -182,9 +164,7 @@ const AccountPage = () => {
   const fetchPaymentData = async () => {
     try {
       setLoading(true);
-      console.log("HERE")
       const response = await fetch('/api/account/payment-methods');
-      console.log(response)
       if (!response.ok) throw new Error('Failed to fetch user data');
       const data = await response.json();
       setPaymentFormData(data);
@@ -198,10 +178,8 @@ const AccountPage = () => {
   const fetchSellerStatus = async () => {
     try {
       setLoading(true);
-      console.log("HERE")
       const response = await fetch('/api/account/seller_status');
-      console.log(response)
-      if (!response.ok) throw new Error('Failed to fetch user data');
+      if (!response.ok) throw new Error('Failed to fetch seller status');
       const data = await response.json();
       setSellerData(data);
     } catch (err) {
@@ -210,8 +188,6 @@ const AccountPage = () => {
       setLoading(false);
     }
   };
-
-
 
   const updateProfile = async (updatedData) => {
     try {
@@ -232,21 +208,21 @@ const AccountPage = () => {
     }
   };
 
-  const addPaymentMethod = async (paymentData) => {
-    console.log(paymentData)
+  const addPaymentMethod = async (e) => {
+    e.preventDefault();
     try {
-      console.log(paymentData)
       const response = await fetch('/api/account/payment-methods', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(paymentData)
+        body: JSON.stringify(paymentFormData)
       });
-      console.log(response)
-      if (!response.ok) throw new Error('Failed to add payment method');
 
+      const result = await response.json();
+      if (!result.ok) throw new Error('Failed to add payment method');
       showToastMessage('Payment method added successfully');
+      // paymentFormData.clear();
       setIsAddingPayment(false);
       await fetchUserData();
     } catch (err) {
@@ -254,7 +230,6 @@ const AccountPage = () => {
     }
   };
 
-  // Event Handlers
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -432,182 +407,130 @@ const AccountPage = () => {
                     </form>
                   </div>
               )}
-              {activeTab === 'payment' && (
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-semibold">Payment Information</h2>
-                      <button
-                          onClick={() => setIsEditing(!isEditing)}
-                          className="text-blue-600 hover:text-blue-700"
-                      >
-                        {isEditing ? 'Cancel' : 'Edit'}
-                      </button>
-                    </div>
+              {activeTab === 'payment' && <PaymentMethodsTab />}
+              {/*{activeTab === 'payment' && (*/}
+              {/*    <div className="bg-white rounded-lg shadow p-6">*/}
+              {/*      <div className="flex justify-between items-center mb-6">*/}
+              {/*        <h2 className="text-xl font-semibold">Payment Methods</h2>*/}
+              {/*        <button*/}
+              {/*            onClick={() => setIsEditing(!isEditing)}*/}
+              {/*            className="text-blue-600 hover:text-blue-700"*/}
+              {/*        >*/}
+              {/*          {isEditing ? 'Cancel' : 'Add Payment Method'}*/}
+              {/*        </button>*/}
+              {/*      </div>*/}
 
-                    {!isEditing ? (
-                        /* View Mode */
-                        <div className="space-y-4">
-                          {userData.accounts.length > 0 ? (
-                              userData.accounts.map(account => {
-                                return (
-                                    <div key={account.account_id} className="border rounded-lg p-4">
-                                      <div className="flex justify-between items-center">
-                                        <div>
-                                          <p className="font-medium">
-                                            {account.account_type === 'credit_card' ? 'Credit Card' : 'Bank Account'}
-                                          </p>
-                                          {account.account_type === 'credit_card' && (
-                                              <>
-                                                <p className="text-sm text-gray-600">
-                                                  Card ending in {account.details['cc_num']}
-                                                </p>
-                                                <p className="text-sm text-gray-600">
-                                                  Expires: {new Date(account.details['exp_date']).toLocaleDateString('en-US', {
-                                                  month: '2-digit',
-                                                  year: '2-digit'
-                                                })}
-                                                </p>
-                                              </>
-                                          )}
-                                          {account.account_type === 'bank_account' && (
-                                              <>
-                                                <p className="text-sm text-gray-600">
-                                                  Account ending in {account.details.bank_acc_num}
-                                                </p>
-                                                <p className="text-sm text-gray-600">
-                                                  Routing: {account.details.routing_num}
-                                                </p>
-                                              </>
-                                          )}
-                                          <p className="text-sm text-gray-600">
-                                            Billing Address: {account.billing_address}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                );
-                              })
-                          ) : (
-                              <p className="text-gray-500 text-center py-4">No payment methods added yet</p>
-                          )}
-                        </div>
-                    ) : (
-                        /* Edit Mode */
-                        <form onSubmit={addPaymentMethod}>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Payment Type
-                            </label>
-                            <select
-                                name="account_type"
-                                value={paymentFormData.account_type}
-                                onChange={handlePaymentInputChange}
-                                className="w-full px-3 py-2 border rounded-lg"
-                            >
-                              <option value="credit_card">Credit Card</option>
-                              <option value="bank_account">Bank Account</option>
-                            </select>
-                          </div>
+              {/*      {!isEditing ? (*/}
+              {/*          <div className="space-y-4">*/}
+              {/*            /!* View existing payment methods *!/*/}
+              {/*          </div>*/}
+              {/*      ) : (*/}
+              {/*          <form onSubmit={addPaymentMethod} className="space-y-4">*/}
+              {/*            <div>*/}
+              {/*              <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                Payment Type*/}
+              {/*              </label>*/}
+              {/*              <select*/}
+              {/*                  name="account_type"*/}
+              {/*                  value={paymentFormData.account_type}*/}
+              {/*                  onChange={handlePaymentInputChange}*/}
+              {/*                  className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*              >*/}
+              {/*                <option value="credit_card">Credit Card</option>*/}
+              {/*                <option value="bank_account">Bank Account</option>*/}
+              {/*              </select>*/}
+              {/*            </div>*/}
 
-                          {paymentFormData.account_type === 'credit_card' ? (
-                              <>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Card Number
-                                  </label>
-                                  <input
-                                      type="text"
-                                      name="cc_num"
-                                      value={paymentFormData.detail.cc_num || ''}
-                                      onChange={handlePaymentInputChange}
-                                      className="w-full px-3 py-2 border rounded-lg"
-                                      placeholder="**** **** **** ****"
-                                      maxLength="16"
-                                  />
-                                </div>
+              {/*            {paymentFormData.account_type === 'credit_card' ? (*/}
+              {/*                <>*/}
+              {/*                  <div>*/}
+              {/*                    <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                      Card Number*/}
+              {/*                    </label>*/}
+              {/*                    <input*/}
+              {/*                        type="text"*/}
+              {/*                        name="cc_num"*/}
+              {/*                        value={paymentFormData.cc_num || ''}*/}
+              {/*                        onChange={handlePaymentInputChange}*/}
+              {/*                        className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*                        placeholder="**** **** **** ****"*/}
+              {/*                        maxLength="16"*/}
+              {/*                    />*/}
+              {/*                  </div>*/}
+              {/*                  <div>*/}
+              {/*                    <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                      Expiry Date*/}
+              {/*                    </label>*/}
+              {/*                    <input*/}
+              {/*                        type="date"*/}
+              {/*                        name="exp_date"*/}
+              {/*                        value={paymentFormData.exp_date || ''}*/}
+              {/*                        onChange={handlePaymentInputChange}*/}
+              {/*                        className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*                        min={new Date().toISOString().split('T')[0]}*/}
+              {/*                    />*/}
+              {/*                  </div>*/}
+              {/*                </>*/}
+              {/*            ) : (*/}
+              {/*                <>*/}
+              {/*                  <div>*/}
+              {/*                    <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                      Account Number*/}
+              {/*                    </label>*/}
+              {/*                    <input*/}
+              {/*                        type="text"*/}
+              {/*                        name="bank_acc_num"*/}
+              {/*                        value={paymentFormData.bank_acc_num || ''}*/}
+              {/*                        onChange={handlePaymentInputChange}*/}
+              {/*                        className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*                        placeholder="Enter account number"*/}
+              {/*                        maxLength="30"*/}
+              {/*                    />*/}
+              {/*                  </div>*/}
+              {/*                  <div>*/}
+              {/*                    <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                      Routing Number*/}
+              {/*                    </label>*/}
+              {/*                    <input*/}
+              {/*                        type="text"*/}
+              {/*                        name="routing_num"*/}
+              {/*                        value={paymentFormData.routing_num || ''}*/}
+              {/*                        onChange={handlePaymentInputChange}*/}
+              {/*                        className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*                        placeholder="Enter routing number"*/}
+              {/*                        maxLength="50"*/}
+              {/*                    />*/}
+              {/*                  </div>*/}
+              {/*                </>*/}
+              {/*            )}*/}
 
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Expiry Date
-                                  </label>
-                                  <input
-                                      type="date"
-                                      name="exp_date"
-                                      value={paymentFormData.detail.exp_date || ''}
-                                      onChange={handlePaymentInputChange}
-                                      className="w-full px-3 py-2 border rounded-lg"
-                                      min={new Date().toISOString().split('T')[0]}
-                                  />
-                                </div>
-                              </>
-                          ) : (
-                              <>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Account Number
-                                  </label>
-                                  <input
-                                      type="text"
-                                      name="bank_acc_num"
-                                      value={paymentFormData.bank_acc_num || ''}
-                                      onChange={handlePaymentInputChange}
-                                      className="w-full px-3 py-2 border rounded-lg"
-                                      placeholder="Enter account number"
-                                      maxLength="30"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Routing Number
-                                  </label>
-                                  <input
-                                      type="text"
-                                      name="routing_num"
-                                      value={paymentFormData.routing_num || ''}
-                                      onChange={handlePaymentInputChange}
-                                      className="w-full px-3 py-2 border rounded-lg"
-                                      placeholder="Enter routing number"
-                                      maxLength="50"
-                                  />
-                                </div>
-                              </>
-                          )}
+              {/*            <div>*/}
+              {/*              <label className="block text-sm font-medium text-gray-700 mb-1">*/}
+              {/*                Billing Address*/}
+              {/*              </label>*/}
+              {/*              <textarea*/}
+              {/*                  name="billing_address"*/}
+              {/*                  value={paymentFormData.billing_address || ''}*/}
+              {/*                  onChange={handlePaymentInputChange}*/}
+              {/*                  rows="3"*/}
+              {/*                  className="w-full px-3 py-2 border rounded-lg"*/}
+              {/*                  placeholder="Enter billing address"*/}
+              {/*                  required*/}
+              {/*              />*/}
+              {/*            </div>*/}
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Billing Address
-                            </label>
-                            <textarea
-                                name="billing_address"
-                                value={paymentFormData.billing_address || ''}
-                                onChange={handlePaymentInputChange}
-                                rows="3"
-                                className="w-full px-3 py-2 border rounded-lg"
-                                placeholder="Enter billing address"
-                                required
-                            />
-                          </div>
-
-                          <div className="pt-4 flex justify-end space-x-4">
-                            <button
-                                type="button"
-                                onClick={() => setIsEditing(false)}
-                                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-800"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                onClick={() => addPaymentMethod(paymentFormData)}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                            >
-                              Save Changes
-                            </button>
-                          </div>
-                        </form>
-                    )}
-                  </div>
-              )}
+              {/*            <div className="pt-4 flex justify-end space-x-4">*/}
+              {/*              <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-800">*/}
+              {/*                Cancel*/}
+              {/*              </button>*/}
+              {/*              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">*/}
+              {/*                Save Changes*/}
+              {/*              </button>*/}
+              {/*            </div>*/}
+              {/*          </form>*/}
+              {/*      )}*/}
+              {/*    </div>*/}
+              {/*)}*/}
 
               {activeTab === 'security' && (
                   <div className="bg-white rounded-lg shadow p-6">

@@ -4,7 +4,6 @@ from COMSW4111.server.transactions import bp
 from flask import current_app
 from flask_login import login_required, current_user
 from datetime import datetime
-from COMSW4111.data_models.dispute import Dispute
 from COMSW4111.data_models.buyer import Buyer
 from COMSW4111.data_models.listing import Listing
 import uuid
@@ -13,10 +12,12 @@ from COMSW4111.data_models import db, Account
 
 
 @bp.route('/transaction', methods=['GET'])
+@login_required
 def begin_transaction():
     return render_template('transaction.html', title='Transactions')
 
 @bp.route('/api/transaction', methods=['POST'])
+@login_required
 def create_transaction():
     try:
         data = request.get_json()
@@ -69,6 +70,7 @@ def create_transaction():
         return jsonify({"error": "Failed to create transaction"}), 500
 
 @bp.route('/api/transaction/<transaction_id>', methods=['GET'])
+@login_required
 def get_transaction(transaction_id):
     """Fetch a specific transaction by ID"""
     transaction = Transaction.query.get(transaction_id)
@@ -86,6 +88,7 @@ def get_transaction(transaction_id):
     })
 
 @bp.route('/api/transaction/update/<transaction_id>', methods=['PUT'])
+@login_required
 def update_transaction_status(transaction_id):
     """Update the status of a transaction"""
     data = request.json
