@@ -20,45 +20,48 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/listing_images'
 
 @bp.route('/listing/<string:listing_id>', methods=['GET'])
+@login_required
 def listing_page(listing_id):
-    listing = Listing.query.filter_by(listing_id=listing_id).first()
-    print(listing)
-    seller_user = PRUser.query.filter_by(user_id=listing.seller_id).first()
-    print(seller_user)
-    # seller = Seller.query.filter_by(seller_id=listing.seller_id).first()
+    result = (
+        db.session.query(Listing, PRUser)
+        .join(PRUser, Listing.seller_id == PRUser.user_id)
+        .filter(Listing.listing_id == listing_id)
+        .first()
+    )
+
+    if not result:
+        return None
+
+    listing, seller = result
+
     list_data = {
-                "listing_id": str(listing.__dict__['listing_id']),
-                "seller_id": str(listing.__dict__['seller_id']),
-                "status": str(listing.__dict__["status"]),
-                "title": str(listing.__dict__["title"]),
-                "description": str(listing.__dict__["description"]),
-                "price": float(listing.__dict__["price"]),
-                "list_image": str(listing.__dict__["list_image"]),
-                "meta_tag": listing.__dict__["meta_tag"],
-                "t_created" : listing.__dict__["t_created"],
-                "seller_name": seller_user.__dict__["first_name"] + " " + seller_user.__dict__["last_name"],
-                "seller_email": seller_user.__dict__["email"],
-                "t_last_edit" : listing.__dict__["t_last_edit"],
-                "location_id": str(listing.__dict__["location_id"])
+        "listing_id": str(listing.listing_id),
+        "seller_id": str(listing.seller_id),
+        "status": str(listing.status),
+        "title": str(listing.title),
+        "description": str(listing.description),
+        "price": float(listing.price),
+        "list_image": str(listing.list_image),
+        "meta_tag": listing.meta_tag,
+        "t_created": listing.t_created,
+        "seller_name": f"{seller.first_name} {seller.last_name}",
+        "seller_email": seller.email,
+        "t_last_edit": listing.t_last_edit,
+        "location_id": str(listing.location_id)
     }
+
     return render_template('listing.html', title='Listing', listing_data=list_data)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def ensure_seller_exists():
-    """Ensure current user has a seller account, create if doesn't exist"""
     seller = Seller.query.get(current_user.user_id)
     if not seller:
-        # Get user's default account
         account = Account.query.filter_by(user_id=current_user.user_id).first()
         if not account:
             raise ValueError("No account found for user")
-
-        seller = Seller(
-            seller_id=current_user.user_id,
-            account_id=account.account_id
-        )
+        seller = Seller(seller_id=current_user.user_id, account_id=account.account_id)
         db.session.add(seller)
         db.session.commit()
     return seller
@@ -69,6 +72,7 @@ def allowed_file(filename):
 
 
 @bp.route('/api/listings/upload-images', methods=['POST'])
+@login_required
 def upload_images():
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
@@ -179,10 +183,10 @@ def create_listing():
 
 
 @bp.route('/api/listings/<string:listing_id>', methods=['GET'])
+@login_required
 def get_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
-
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
 
@@ -203,9 +207,8 @@ def get_listing(listing_id):
     except Exception as e:
         current_app.logger.error(f"Error fetching listing: {str(e)}")
         return jsonify({'error': 'Failed to fetch listing'}), 500
-
-
 @bp.route('/api/listings/<string:listing_id>', methods=['PUT'])
+@login_required
 def update_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
@@ -253,6 +256,7 @@ def update_listing(listing_id):
 
 
 @bp.route('/api/listings/<string:listing_id>', methods=['DELETE'])
+@login_required
 def delete_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
@@ -274,10 +278,25 @@ def delete_listing(listing_id):
 
 
 @bp.route('/api/listing/search', methods=['GET'])
+@login_required
 def search_listings():
-    if request.args is None:
-        listings = Listing.query.all()
-        # Format results
+    try:
+        title = request.args.get('title', '')
+        min_price = request.args.get('min_price', type=float)
+        max_price = request.args.get('max_price', type=float)
+        meta_tag = request.args.get('meta_tag', '')
+
+        query = Listing.query
+        if title:
+            query = query.filter(Listing.title.ilike(f'%{title}%'))
+        if min_price is not None:
+            query = query.filter(Listing.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Listing.price <= max_price)
+        if meta_tag:
+            query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
+
+        listings = query.all()
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
@@ -293,50 +312,7 @@ def search_listings():
         } for listing in listings]
 
         return jsonify(results), 200
-    else:
-        try:
-            # Get search parameters
-            title = request.args.get('title', '')
-            min_price = request.args.get('min_price', type=float)
-            max_price = request.args.get('max_price', type=float)
-            meta_tag = request.args.get('meta_tag', '')
 
-            # Build query
-            query = Listing.query
-
-            if title:
-                query = query.filter(Listing.title.ilike(f'%{title}%'))
-            if min_price is not None:
-                query = query.filter(Listing.price >= min_price)
-            if max_price is not None:
-                query = query.filter(Listing.price <= max_price)
-            if meta_tag:
-                query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
-
-            # Execute query
-            listings = query.all()
-
-            # Format results
-            results = [{
-                'listing_id': listing.listing_id,
-                'seller_id': listing.seller_id,
-                'title': listing.title,
-                'status': listing.status,
-                'description': listing.description,
-                'price': float(listing.price),
-                'list_image': listing.list_image,
-                'location_id': listing.location_id,
-                'meta_tag': listing.meta_tag,
-                't_created': listing.t_created.isoformat(),
-                't_last_edit': listing.t_last_edit.isoformat()
-            } for listing in listings]
-
-            return jsonify(results), 200
-
-        except Exception as e:
-            current_app.logger.error(f"Error searching listings: {str(e)}")
-            return jsonify({'error': 'Failed to search listings'}), 500
-
-
-
-
+    except Exception as e:
+        current_app.logger.error(f"Error searching listings: {str(e)}")
+        return jsonify({'error': 'Failed to search listings'}), 500
