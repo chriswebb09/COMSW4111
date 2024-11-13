@@ -1,45 +1,109 @@
-VENV_DIR = $(CURDIR)/venv
-PYTHON = python3
-VENV_PYTHON = $(VENV_DIR)/bin/python
-VENV_PIP = $(VENV_DIR)/bin/pip
-SHELL := /bin/bash
+#########
+# BUILD #
+#########
+develop:  ## install dependencies and build library
+	python3 -m pip install Flask==2.2.2 -e .[develop]
+	python3 -m pip uninstall urllib3 .[develop]
+	python3 -m pip install urllib3==1.26.6 -e .[develop]
+	python3 -m pip install Werkzeug==2.0.2 -e .[develop]
+	python3 -m pip install requests -e .[develop]
+	python3 -m pip install Flask-Login -e .[develop]
+	python3 -m pip install flask_httpauth -e .[develop]
+	python3 -m pip install flask_migrate -e .[develop]
+	python3 -m pip install Flask-SQLAlchemy -e .[develop]
+	python3 -m pip install psycopg2 -e .[develop]
+	python3 -m pip install -e .[develop]
+#	python3 -m pip install --upgrade flask werkzeug flask-login .[develop]
 
-.PHONY: venv clean develop build install requirements sync run
+build:  ## build the python library
+	python3 setup.py build build_ext --inplace
 
-venv:  ## Create virtual environment
-	test -d $(VENV_DIR) || $(PYTHON) -m venv $(VENV_DIR)
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PIP) install --upgrade pip setuptools wheel pip-tools
+install:  ## install library
+	python3 -m pip install .
 
-install-deps: venv  ## Install core dependencies
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PIP) install Flask==2.2.2 Werkzeug==2.2.2 Flask-Login==0.6.2 Flask-SQLAlchemy==3.0.2 flask-migrate==4.0.4 flask-httpauth==4.7.0 flask-wtf==1.1.1 urllib3==1.26.6 psycopg2==2.9.5
+#########
+# LINTS #
+#########
+lint:  ## run static analysis with flake8
+	python3 -m black --check COMS4111 setup.py
+	python3 -m flake8 COMS4111 setup.py
 
-verify-flask: install-deps  ## Verify Flask installation
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PYTHON) -c "import flask; print(flask.__file__)" || (echo "Flask is not installed in the virtual environment"; exit 1)
+# Alias
+lints: lint
 
-requirements: install-deps  ## Compile requirements from pyproject.toml
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PIP)-compile --upgrade --strip-extras --output-file=requirements.txt pyproject.toml
+format:  ## run autoformatting with black
+	python3 -m black COMS4111/ setup.py
 
-sync: requirements  ## Sync virtual environment with requirements.txt
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PIP)-sync requirements.txt && \
-	$(VENV_PIP) install -e .
+# alias
+fix: format
 
-develop: clean venv install-deps sync verify-flask  ## Set up development environment
+check:  ## check assets for packaging
+	check-manifest -v
 
-run: verify-flask  ## Run the application
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PYTHON) -m COMSW4111 local
+# Alias
+checks: check
 
-clean:  ## Clean everything
-	rm -rf $(VENV_DIR)
+annotate:  ## run type checking
+	python3 -m mypy ./COMS4111
+
+#########
+# TESTS #
+#########
+test: ## clean and run unit tests
+	python3 -m pytest -v COMS4111/tests
+
+coverage:  ## clean and run unit tests with coverage
+	python3 -m pytest -v example_project_python/tests --cov=example_project_python --cov-branch --cov-fail-under=75 --cov-report term-missing
+
+# Alias
+tests: test
+
+###########
+# VERSION #
+###########
+show-version:
+	bump2version --dry-run --allow-dirty setup.py --list | grep current | awk -F= '{print $2}'
+
+patch:
+	bump2version patch
+
+minor:
+	bump2version minor
+
+major:
+	bump2version major
+
+########
+# DIST #
+########
+dist-build:  # Build python dist
+	python3 setup.py sdist bdist_wheel
+
+dist-check:
+	python3 -m twine check dist/*
+
+dist: clean build dist-build dist-check  ## Build dists
+
+publish:  # Upload python assets
+	echo "would usually run python -m twine upload dist/* --skip-existing"
+
+#########
+# CLEAN #
+#########
+deep-clean: ## clean everything from the repository
+	git clean -fdx
+
+clean: ## clean the repository
 	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info .pytest_cache
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
 
-test: verify-flask  ## Run tests
-	. $(VENV_DIR)/bin/activate && \
-	$(VENV_PYTHON) -m pytest
+############################################################################################
+
+# Thanks to Francoise at marmelab.com for this
+.DEFAULT_GOAL := help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+print-%:
+	@echo '$*=$($*)'
+
+.PHONY: develop build install lint lints format fix check checks annotate test coverage show-coverage tests show-version patch minor major dist-build dist-check dist publish deep-clean clean help
