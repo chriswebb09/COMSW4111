@@ -207,6 +207,7 @@ def get_listing(listing_id):
     except Exception as e:
         current_app.logger.error(f"Error fetching listing: {str(e)}")
         return jsonify({'error': 'Failed to fetch listing'}), 500
+
 @bp.route('/api/listings/<string:listing_id>', methods=['PUT'])
 @login_required
 def update_listing(listing_id):
@@ -323,6 +324,7 @@ def update_listing_status():
     # Get the new status from request data
     data = request.get_json()
     listing_id = data['listing_id']
+    print(data)
     try:
         # Get the listing
         listing = Listing.query.filter_by(listing_id=listing_id).first()
@@ -335,7 +337,7 @@ def update_listing_status():
         # Update the status and last edit time
         listing.status = new_status
         listing.t_last_edit = datetime.utcnow()
-
+        print(listing)
         db.session.commit()
 
         return jsonify({
