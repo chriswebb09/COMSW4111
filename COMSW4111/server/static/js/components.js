@@ -338,7 +338,7 @@ const BuyerDashboard = () => {
   if (!buyerData) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-23">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-blue-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-blue-800">Total Transactions</h3>
@@ -453,7 +453,7 @@ const SellerDashboard = () => {
     if (!sellerData) return null;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-23">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <h3 className="text-lg font-medium text-blue-800">Total Sales</h3>
