@@ -112,3 +112,19 @@ pythonpath = [
 ]
 asyncio_mode = 'strict'
 testpaths = 'tests/'
+
+dependencies = [
+    "Flask==2.2.2",
+    "Werkzeug==2.2.2",
+    "Flask-SQLAlchemy==3.0.2",
+    "Flask-Login==0.6.2",
+    "flask_httpauth==4.7.0",
+    "flask_migrate==4.0.4",
+    "flask-wtf==1.1.1",
+    "psycopg2==2.9.5",
+    "click",
+    "requests",
+    "urllib3==1.26.6",
+    "python-Levenshtein",
+    "pytest"
+]

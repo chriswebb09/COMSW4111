@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from COMSW4111.data_models import PRUser
 from flask_login import LoginManager, current_user
 from COMSW4111.config import Config
+from flask_wtf.csrf import CSRFProtect
 
 file = Path(__file__).resolve()
 package_root_directory = file.parents[1]
@@ -41,6 +42,7 @@ def load_user(id):
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
     app.config.from_object(config_class)
+    csrf = CSRFProtect(app)
     db.init_app(app)
     from COMSW4111.server.main import bp as main_bp
     app.register_blueprint(main_bp)
