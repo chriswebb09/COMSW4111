@@ -599,15 +599,6 @@ def update_account_transaction():
                 'valid_statuses': valid_statuses
             }), 400
 
-        # Here you would update the transaction in your database
-        # For example with SQLAlchemy:
-        # transaction = Transaction.query.get(data['transaction_id'])
-        # if not transaction:
-        #     return jsonify({'error': 'Transaction not found'}), 404
-        # transaction.status = data['status']
-        # transaction.updated_at = datetime.utcnow()
-        # db.session.commit()
-
         return jsonify({
             'message': 'Transaction updated successfully',
             'transaction_id': data['transaction_id'],
@@ -641,27 +632,9 @@ def update_transaction_status():
             }), 400
 
         transaction = Transaction.query.filter_by(transaction_id=data['transaction_id']).first()
-        # Get and update transaction
-      # //  transaction = (Transaction.query.
-      #                  //get(data["transaction_id"]))
 
         if not transaction:
             return jsonify({'error': 'Transaction not found'}), 404
-
-        # # Validate status transition
-        # status_transitions = {
-        #     'pending': ['confirming'],
-        #     'confirming': ['confirmed', 'pending'],
-        #     'confirmed': ['completed', 'confirming'],
-        #     'completed': []  # Final state
-        # }
-        #
-        # if new_status not in status_transitions[transaction.status]:
-        #     return jsonify({
-        #         'error': 'Invalid status transition',
-        #         'allowed_transitions': status_transitions[transaction.status]
-        #     }), 400
-
         # Update the status
         transaction.status = new_status
         db.session.commit()

@@ -4,9 +4,7 @@ import sys
 from pathlib import Path
 from flask import Flask, request
 from COMSW4111.data_models import db
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import redirect, url_for
 from COMSW4111.data_models import PRUser
 from flask_login import LoginManager, current_user
 from COMSW4111.config import Config

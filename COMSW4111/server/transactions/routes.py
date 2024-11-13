@@ -8,7 +8,6 @@ from COMSW4111.data_models.transaction import Transaction
 from COMSW4111.data_models.buyer import Buyer
 from COMSW4111.data_models.listing import Listing
 from COMSW4111.server.transactions import bp
-
 import uuid
 
 @bp.route('/transaction', methods=['GET'])

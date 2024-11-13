@@ -106,36 +106,12 @@ def get_admin_login():
 def get_admin_signup():
     return render_template("admin_login.html")
 
-# @bp.route('/api/admin/login', methods=['POST'])
-# def login_admin():
-#     pass
-
-
 @bp.route('/api/admin/signup', methods=['POST'])
 def create_admin_account():
     """Create a new admin user account"""
-
     form_data = request.get_json()
-    print(form_data)
-
     try:
-
-        # # Validate required fields
-        # required_fields = ['firstName', 'lastName', 'email', 'password',
-        #                    'address', 'phoneNumber', 'adminRole']
-        # if not all(field in data for field in required_fields):
-        #     return jsonify({
-        #         'error': 'Missing required fields',
-        #         'required': required_fields
-        #     }), 400
-
-        # # Check if email already exists
-        # existing_user = PRUser.query.filter_by(email=data['email']).first()
-        # if existing_user:
-        #     return jsonify({'error': 'Email already registered'}), 409
-
         user_id = str(uuid.uuid4())
-
         # Create new user
         new_user = PRUser(
             user_id=user_id,
@@ -149,7 +125,6 @@ def create_admin_account():
             t_last_act=datetime.utcnow()
         )
         new_user.set_password(form_data['password'])
-
         # Create admin role
         new_admin = Admin(
             admin_id=user_id,
@@ -160,7 +135,6 @@ def create_admin_account():
         db.session.add(new_user)
         db.session.add(new_admin)
         db.session.commit()
-
         return jsonify({
             'message': 'Admin account created successfully',
             'user_id': user_id,
@@ -174,6 +148,3 @@ def create_admin_account():
     except Exception as e:
         current_app.logger.error(f"Error creating admin account: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-# @bp.route('/api/admin/signup', methods=['POST'])
-# def signup_admin():
-#     pass
