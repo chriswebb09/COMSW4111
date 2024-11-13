@@ -1,109 +1,38 @@
-#########
-# BUILD #
-#########
-develop:  ## install dependencies and build library
-	python3 -m pip install Flask==2.2.2 -e .[develop]
-	python3 -m pip uninstall urllib3 .[develop]
-	python3 -m pip install urllib3==1.26.6 -e .[develop]
-	python3 -m pip install Werkzeug==2.0.2 -e .[develop]
-	python3 -m pip install requests -e .[develop]
-	python3 -m pip install Flask-Login -e .[develop]
-	python3 -m pip install flask_httpauth -e .[develop]
-	python3 -m pip install flask_migrate -e .[develop]
-	python3 -m pip install Flask-SQLAlchemy -e .[develop]
-	python3 -m pip install psycopg2 -e .[develop]
-	python3 -m pip install -e .[develop]
-#	python3 -m pip install --upgrade flask werkzeug flask-login .[develop]
+VENV_DIR = $(CURDIR)/venv
+PYTHON = $(VENV_DIR)/bin/python
+PIP = $(VENV_DIR)/bin/pip
 
-build:  ## build the python library
-	python3 setup.py build build_ext --inplace
+.PHONY: venv clean develop build install
 
-install:  ## install library
-	python3 -m pip install .
+venv:  ## Create virtual environment
+	python3 -m venv $(VENV_DIR)
+	$(PIP) install --upgrade pip setuptools wheel
 
-#########
-# LINTS #
-#########
-lint:  ## run static analysis with flake8
-	python3 -m black --check COMS4111 setup.py
-	python3 -m flake8 COMS4111 setup.py
+develop: venv  ## Install dependencies in virtual environment
+	$(PIP) uninstall -y Flask Werkzeug && \
+	$(PIP) install Werkzeug==2.2.2 && \
+	$(PIP) install Flask==2.2.2 && \
+	$(PIP) install -e . && \
+	$(PIP) install urllib3==1.26.6 \
+		Flask-Login==0.6.2 \
+		Flask-SQLAlchemy==3.0.2 \
+		flask-migrate==4.0.4 \
+		flask-httpauth==4.7.0 \
+		flask-wtf==1.1.1 \
+		psycopg2==2.9.5
 
-# Alias
-lints: lint
-
-format:  ## run autoformatting with black
-	python3 -m black COMS4111/ setup.py
-
-# alias
-fix: format
-
-check:  ## check assets for packaging
-	check-manifest -v
-
-# Alias
-checks: check
-
-annotate:  ## run type checking
-	python3 -m mypy ./COMS4111
-
-#########
-# TESTS #
-#########
-test: ## clean and run unit tests
-	python3 -m pytest -v COMS4111/tests
-
-coverage:  ## clean and run unit tests with coverage
-	python3 -m pytest -v example_project_python/tests --cov=example_project_python --cov-branch --cov-fail-under=75 --cov-report term-missing
-
-# Alias
-tests: test
-
-###########
-# VERSION #
-###########
-show-version:
-	bump2version --dry-run --allow-dirty setup.py --list | grep current | awk -F= '{print $2}'
-
-patch:
-	bump2version patch
-
-minor:
-	bump2version minor
-
-major:
-	bump2version major
-
-########
-# DIST #
-########
-dist-build:  # Build python dist
-	python3 setup.py sdist bdist_wheel
-
-dist-check:
-	python3 -m twine check dist/*
-
-dist: clean build dist-build dist-check  ## Build dists
-
-publish:  # Upload python assets
-	echo "would usually run python -m twine upload dist/* --skip-existing"
-
-#########
-# CLEAN #
-#########
-deep-clean: ## clean everything from the repository
-	git clean -fdx
-
-clean: ## clean the repository
+clean:  ## Clean everything
+	rm -rf $(VENV_DIR)
 	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info .pytest_cache
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
 
-############################################################################################
+run:  ## Run the application
+	$(PYTHON) -m COMSW4111 local
 
-# Thanks to Francoise at marmelab.com for this
-.DEFAULT_GOAL := help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+test: ## Run tests
+	$(PYTHON) -m pytest
 
-print-%:
-	@echo '$*=$($*)'
-
-.PHONY: develop build install lint lints format fix check checks annotate test coverage show-coverage tests show-version patch minor major dist-build dist-check dist publish deep-clean clean help
+# Add this to automatically create the venv if it doesn't exist
+$(VENV_DIR):
+	$(MAKE) venv
