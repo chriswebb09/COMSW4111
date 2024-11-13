@@ -379,29 +379,40 @@ const BuyerDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {buyerData.transactions.map((transaction) => (
-                <tr key={transaction.transaction_id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.date}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {/*{transaction.listing.image && (*/}
-                      {/*  <img src={transaction.listing.image} alt="" className="h-10 w-10 rounded-lg mr-3" />*/}
-                      {/*)}*/}
-                      <div className="text-sm text-gray-900">{transaction.listing_title}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.service_fee.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.total_amount.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={transaction.transaction_id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.date}</td>
+                      <td className="px-6 py-4">
+                          <div className="flex items-center">
+                              {/*{transaction.listing.image && (*/}
+                              {/*  <img src={transaction.listing.image} alt="" className="h-10 w-10 rounded-lg mr-3" />*/}
+                              {/*)}*/}
+                              <div className="text-sm text-gray-900">{transaction.listing_title}</div>
+                          </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.service_fee.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.total_amount.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
+                        transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-blue-100 text-blue-800'
                     }`}>
                       {transaction.status}
                     </span>
-                  </td>
-                </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <a href={`/account/transaction/${transaction.transaction_id}`}>
+                              <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                  </svg>
+                                  View
+                              </button>
+                          </a>
+                      </td>
+                  </tr>
               ))}
             </tbody>
           </table>
@@ -412,42 +423,42 @@ const BuyerDashboard = () => {
 };
 
 const SellerDashboard = () => {
-  const [sellerData, setSellerData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [sellerData, setSellerData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchSellerData();
-  }, []);
+    useEffect(() => {
+        fetchSellerData();
+    }, []);
 
-  const fetchSellerData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/account/seller_list');
-      if (!response.ok) throw new Error('Failed to fetch seller data');
-      const data = await response.json();
-      setSellerData(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchSellerData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/account/seller_list');
+            if (!response.ok) throw new Error('Failed to fetch seller data');
+            const data = await response.json();
+            setSellerData(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!sellerData) return null;
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div className="text-red-500">{error}</div>;
+    if (!sellerData) return null;
 
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-medium text-blue-800">Total Sales</h3>
-          <p className="text-3xl font-bold text-blue-900">${sellerData.summary.total_sales.toFixed(2)}</p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="text-lg font-medium text-green-800">Net Earnings</h3>
-          <p className="text-3xl font-bold text-green-900">${sellerData.summary.net_earnings.toFixed(2)}</p>
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-medium text-blue-800">Total Sales</h3>
+                    <p className="text-3xl font-bold text-blue-900">${sellerData.summary.total_sales.toFixed(2)}</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-medium text-green-800">Net Earnings</h3>
+                    <p className="text-3xl font-bold text-green-900">${sellerData.summary.net_earnings.toFixed(2)}</p>
         </div>
         <div className="bg-purple-50 p-4 rounded-lg">
           <h3 className="text-lg font-medium text-purple-800">Service Fees</h3>
@@ -511,32 +522,208 @@ const SellerDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sellerData.transactions.map((transaction) => (
-                <tr key={transaction.transaction_id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.date}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {/*{transaction.listing.image && (*/}
-                      {/*  <img src={transaction.listing.image} alt="" className="h-10 w-10 rounded-lg mr-3" />*/}
-                      {/*)}*/}
-                      <div className="text-sm text-gray-900">Transaction {transaction.transaction_id}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.service_fee.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.net_amount.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={transaction.transaction_id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.date}</td>
+                      <td className="px-6 py-4">
+                          <div className="flex items-center">
+                              {/*{transaction.listing.image && (*/}
+                              {/*  <img src={transaction.listing.image} alt="" className="h-10 w-10 rounded-lg mr-3" />*/}
+                              {/*)}*/}
+                              <div className="text-sm text-gray-900">Transaction {transaction.transaction_id}</div>
+                          </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.service_fee.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.net_amount.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
+                        transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-blue-100 text-blue-800'
                     }`}>
                       {transaction.status}
                     </span>
-                  </td>
-                </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <a href={`/account/transaction/${transaction.transaction_id}`}>
+                              <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                  </svg>
+                                  View
+                              </button>
+                          </a>
+                      </td>
+                  </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+        </div>
+    );
+};
+
+const TransactionDetails = () => {
+    // Sample initial transaction data
+    const [transaction, setTransaction] = useState({
+        transaction_id: 'TX-2024-001',
+        date: '2024-03-15',
+        listing_title: 'Premium Package',
+        customer_name: 'John Doe',
+        customer_email: 'john.doe@example.com',
+        price: 299.99,
+        service_fee: 14.99,
+        total_amount: 314.98,
+        status: 'pending',
+        payment_method: 'Credit Card',
+        notes: 'Standard delivery requested'
+    });
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [newStatus, setNewStatus] = useState(transaction.status);
+
+    const statusOptions = ['pending', 'processing', 'completed', 'cancelled', 'refunded'];
+
+    const handleStatusUpdate = () => {
+        setTransaction(prev => ({
+            ...prev,
+            status: newStatus
+        }));
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setNewStatus(transaction.status);
+        setIsEditing(false);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-8">
+            <div className="max-w-3xl mx-auto bg-white rounded-lg shadow">
+                {/* Header */}
+                <div className="border-b border-gray-200 px-6 py-4">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-2xl font-bold text-gray-900">Transaction Details</h1>
+                        <span className="text-sm text-gray-500">ID: {transaction.transaction_id}</span>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-6 py-4">
+                    {/* Status Section */}
+                    <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                                {!isEditing ? (
+                                    <span className={`mt-1 inline-flex px-3 py-1 rounded-full text-sm font-medium
+                    ${transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    transaction.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                    transaction.status === 'refunded' ? 'bg-purple-100 text-purple-800' :
+                    'bg-blue-100 text-blue-800'}`}>
+                    {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                  </span>
+                ) : (
+                  <div className="mt-1 flex items-center space-x-2">
+                    <select
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value)}
+                      className="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    >
+                      {statusOptions.map(option => (
+                        <option key={option} value={option}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={handleStatusUpdate}
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Edit Status
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Transaction Details */}
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 mb-4">Transaction Information</h3>
+              <dl className="space-y-3">
+                <div>
+                  <dt className="text-xs text-gray-500">Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{transaction.date}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500">Listing</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{transaction.listing_title}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500">Payment Method</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{transaction.payment_method}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 mb-4">Customer Information</h3>
+              <dl className="space-y-3">
+                <div>
+                  <dt className="text-xs text-gray-500">Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{transaction.customer_name}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500">Email</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{transaction.customer_email}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          {/* Financial Details */}
+          <div className="mt-8 border-t border-gray-200 pt-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-4">Financial Details</h3>
+            <dl className="space-y-3">
+              <div className="flex justify-between">
+                <dt className="text-sm text-gray-500">Price</dt>
+                <dd className="text-sm text-gray-900">${transaction.price.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-sm text-gray-500">Service Fee</dt>
+                <dd className="text-sm text-gray-900">${transaction.service_fee.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between pt-3 border-t border-gray-200">
+                <dt className="text-sm font-medium text-gray-900">Total Amount</dt>
+                <dd className="text-sm font-medium text-gray-900">${transaction.total_amount.toFixed(2)}</dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* Notes */}
+          <div className="mt-8 border-t border-gray-200 pt-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Notes</h3>
+            <p className="text-sm text-gray-600">{transaction.notes}</p>
+          </div>
         </div>
       </div>
     </div>

@@ -577,6 +577,161 @@ def get_buyer_transactions():
         return jsonify({"error": "Failed to fetch buyer transactions"}), 500
 
 
+@bp.route('/api/account/transaction', methods=['POST'])
+@login_required
+def update_account_transaction():
+    try:
+        data = request.get_json()
+
+        # Validate required fields
+        required_fields = ['transaction_id', 'status']
+        if not all(field in data for field in required_fields):
+            return jsonify({
+                'error': 'Missing required fields',
+                'required': required_fields
+            }), 400
+
+        # Validate status values
+        valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
+        if data['status'] not in valid_statuses:
+            return jsonify({
+                'error': 'Invalid status value',
+                'valid_statuses': valid_statuses
+            }), 400
+
+        # Here you would update the transaction in your database
+        # For example with SQLAlchemy:
+        # transaction = Transaction.query.get(data['transaction_id'])
+        # if not transaction:
+        #     return jsonify({'error': 'Transaction not found'}), 404
+        # transaction.status = data['status']
+        # transaction.updated_at = datetime.utcnow()
+        # db.session.commit()
+
+        return jsonify({
+            'message': 'Transaction updated successfully',
+            'transaction_id': data['transaction_id'],
+            'status': data['status'],
+            'updated_at': datetime.utcnow().isoformat()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'error': 'Internal server error',
+            'message': str(e)
+        }), 500
+
+
+@bp.route('/api/account/transaction/status', methods=['PUT'])
+@login_required
+def update_transaction_status():
+    data = request.get_json()
+    try:
+        # Get the request data
+        print(data)
+
+        new_status = data['status']
+
+        # Validate status value
+        valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
+        if new_status not in valid_statuses:
+            return jsonify({
+                'error': 'Invalid status value',
+                'valid_statuses': valid_statuses
+            }), 400
+
+        transaction = Transaction.query.filter_by(transaction_id=data['transaction_id']).first()
+        # Get and update transaction
+      # //  transaction = (Transaction.query.
+      #                  //get(data["transaction_id"]))
+
+        if not transaction:
+            return jsonify({'error': 'Transaction not found'}), 404
+
+        # # Validate status transition
+        # status_transitions = {
+        #     'pending': ['confirming'],
+        #     'confirming': ['confirmed', 'pending'],
+        #     'confirmed': ['completed', 'confirming'],
+        #     'completed': []  # Final state
+        # }
+        #
+        # if new_status not in status_transitions[transaction.status]:
+        #     return jsonify({
+        #         'error': 'Invalid status transition',
+        #         'allowed_transitions': status_transitions[transaction.status]
+        #     }), 400
+
+        # Update the status
+        transaction.status = new_status
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Transaction status updated successfully',
+            'transaction_id': data['transaction_id'],
+            'status': new_status,
+            'updated_at': datetime.utcnow().isoformat()
+        }), 200
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        return jsonify({
+            'error': 'Internal server error',
+            'message': str(e)
+        }), 500
+
+@bp.route('/api/account/transaction/<string:transaction_id>', methods=['GET'])
+@login_required
+def get_transaction_detail(transaction_id):
+    try:
+        # Query transaction with related data
+        transaction = Transaction.query \
+            .join(Buyer, Transaction.buyer_id == Buyer.buyer_id) \
+            .join(Seller, Transaction.seller_id == Seller.seller_id) \
+            .filter(Transaction.transaction_id == transaction_id) \
+            .first()
+
+        if not transaction:
+            return jsonify({'error': 'Transaction not found'}), 404
+
+        # Get buyer and seller account details
+        buyer_account = Account.query.filter_by(account_id=transaction.pr_buyer.account_id).first()
+        seller_account = Account.query.filter_by(account_id=transaction.pr_seller.account_id).first()
+
+        # Format response
+        transaction_data = {
+            'transaction_id': transaction.transaction_id,
+            'date': transaction.t_date.strftime('%Y-%m-%d'),
+            'agreed_price': float(transaction.agreed_price),
+            'service_fee': float(transaction.serv_fee),
+            'total_amount': float(transaction.agreed_price) + float(transaction.serv_fee),
+            'status': transaction.status,
+            'listing_id': transaction.listing_id,
+            'buyer': {
+                'buyer_id': transaction.buyer_id,
+                'account_id': buyer_account.account_id,
+                'billing_address': buyer_account.billing_address
+            },
+            'seller': {
+                'seller_id': transaction.seller_id,
+                'account_id': seller_account.account_id,
+                'billing_address': seller_account.billing_address
+            }
+        }
+
+        return jsonify(transaction_data), 200
+
+    except Exception as e:
+        return jsonify({
+            'error': 'Internal server error',
+            'message': str(e)
+        }), 500
+
+@bp.route('/account/transaction/<string:transaction_id>', methods=['GET'])
+@login_required
+def acount_transaction_detail(transaction_id):
+    return render_template('transaction_details.html', title='Transaction Detail')
 
 @bp.route('/account', methods=['GET', 'POST'])
 @login_required

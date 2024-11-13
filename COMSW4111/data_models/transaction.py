@@ -12,4 +12,4 @@ class Transaction(db.Model):
     t_date = db.Column(db.Date)
     agreed_price = db.Column(DECIMAL(10, 2), nullable=False)
     serv_fee = db.Column(DECIMAL(10, 2))
-    status = db.Column(db.String(20), db.CheckConstraint("status IN ('pending', 'confirming', 'confirmed', 'completed')"), nullable=False)
+    status = db.Column(db.String(20), db.CheckConstraint("status IN ('pending', 'processing', 'cancelled', 'refunded', 'confirming', 'confirmed', 'completed')"), nullable=False)
