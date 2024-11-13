@@ -289,7 +289,7 @@ const AccountPage = () => {
                                     { id: 'payment', label: 'Payment Methods' },
                                     { id: 'security', label: 'Security' },
                                     userData.roles.is_seller && { id: 'seller', label: 'Seller Dashboard' },
-                                    userData.roles.is_buyer && { id: 'buyer', label: 'Buyer Activity' }
+                                    userData.roles.is_buyer && { id: 'buyer', label: 'Buyer Dashboard' }
                                 ].filter(Boolean).map(item => (
                                     <button
                                         key={item.id}
@@ -485,6 +485,7 @@ const AccountPage = () => {
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-semibold">Seller Dashboard</h2>
                                 </div>
+                                 <SellerDashboard sellerData={sellerData} />
                             </div>
                         )}
                         {activeTab === 'buyer' && (
@@ -492,6 +493,7 @@ const AccountPage = () => {
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-semibold">Buyer Dashboard</h2>
                                 </div>
+                                 <BuyerDashboard buyerData={buyerData} />
                             </div>
                         )}
                     </div>

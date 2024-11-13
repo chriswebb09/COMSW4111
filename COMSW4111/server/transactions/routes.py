@@ -158,6 +158,7 @@ def get_transaction(transaction_id):
         "status": transaction.status
     })
 
+
 @bp.route('/api/transaction/update/<transaction_id>', methods=['PUT'])
 @login_required
 def update_transaction_status(transaction_id):
