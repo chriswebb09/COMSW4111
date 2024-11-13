@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools",
+    "pip",
     "setuptools-scm",
     "wheel",
     "Flask",
@@ -15,6 +16,7 @@ requires = [
     "python-Levenshtein",
     "pytest"
 ]
+
 build-backend = "setuptools.build_meta"
 
 [project]
