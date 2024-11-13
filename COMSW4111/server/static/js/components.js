@@ -306,6 +306,9 @@ const PaymentMethodsTab = () => {
         </div>
     );
 };
+
+
+
 const BuyerDashboard = () => {
   const [buyerData, setBuyerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -567,19 +570,7 @@ const SellerDashboard = () => {
 
 const TransactionDetails = () => {
     // Sample initial transaction data
-    const [transaction, setTransaction] = useState({
-        transaction_id: 'TX-2024-001',
-        date: '2024-03-15',
-        listing_title: 'Premium Package',
-        customer_name: 'John Doe',
-        customer_email: 'john.doe@example.com',
-        price: 299.99,
-        service_fee: 14.99,
-        total_amount: 314.98,
-        status: 'pending',
-        payment_method: 'Credit Card',
-        notes: 'Standard delivery requested'
-    });
+    const [transaction, setTransaction] = useState({});
 
     const [isEditing, setIsEditing] = useState(false);
     const [newStatus, setNewStatus] = useState(transaction.status);

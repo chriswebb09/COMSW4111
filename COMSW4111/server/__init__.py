@@ -42,7 +42,7 @@ def load_user(id):
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
     app.config.from_object(config_class)
-    csrf = CSRFProtect(app)
+    # csrf = CSRFProtect(app)
     db.init_app(app)
     from COMSW4111.server.main import bp as main_bp
     app.register_blueprint(main_bp)

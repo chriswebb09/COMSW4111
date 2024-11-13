@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, request, current_app, session, render_template
-from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
+
+from flask import jsonify, request, current_app, session, render_template
+from flask_login import login_required, current_user
+from sqlalchemy import func, desc, case, or_
 from sqlalchemy.exc import SQLAlchemyError
-from COMSW4111.data_models import db
-from COMSW4111.data_models import PRUser
-from COMSW4111.data_models import Account
-from COMSW4111.data_models import BankAccount
-from COMSW4111.data_models import CreditCard
-from COMSW4111.data_models import Buyer
-from COMSW4111.data_models import Seller
+
+from COMSW4111.data_models import (
+    db, PRUser, Account, BankAccount, CreditCard, Buyer, Seller, Transaction, Listing
+)
 from COMSW4111.server.app import check_account_status
-from COMSW4111.data_models import Transaction
-from COMSW4111.data_models import Listing
 from COMSW4111.server.account import bp
-from sqlalchemy import func
-from sqlalchemy import desc
 
 
 @bp.route('/api/account/profile', methods=['GET'])
@@ -107,10 +102,10 @@ def get_payment_methods():
                 'account_type': account.account_type,
                 'billing_address': account.billing_address,
                 'details': {
-                    'bank_acc_num': f"****{bank_account.bank_acc_num}",
-                    'routing_num': f"****{bank_account.routing_num}"
+                    'bank_acc_num': mask_sensitive_data(bank_account.bank_acc_num),
+                    'routing_num': mask_sensitive_data(bank_account.routing_num)
                 } if account.account_type == 'bank_account' and bank_account else {
-                    'cc_num': f"****{credit_card.cc_num}",
+                    'cc_num': mask_sensitive_data(credit_card.cc_num),
                     'exp_date': credit_card.exp_date
                 } if account.account_type == 'credit_card' and credit_card else None
             }
@@ -122,53 +117,6 @@ def get_payment_methods():
     except Exception as e:
         current_app.logger.error(f"Error fetching payment methods: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
-
-
-def add_credit_card(account_id, cc_num):
-    user = PRUser.query.get(current_user.user_id)
-    new_account = Account(
-        account_id=str(uuid.uuid4()),
-        user_id=current_user.user_id,
-        billing_address=user.address,
-        account_type='credit_card'
-    )
-    db.session.add(new_account)
-    db.session.flush()
-
-    new_credit_card = CreditCard(
-        account_id=new_account.account_id,
-        cc_num=cc_num,
-        exp_date=datetime.strptime('24052010', '%d%m%Y').date()
-    )
-
-    db.session.add(new_credit_card)
-    db.session.commit()
-    session['anonymous_user_id'] = current_user.user_id
-    print(f"Credit card for account {account_id} added successfully.")
-
-
-def add_bank_account(account_id, bank_account_num, routing_num):
-    user = PRUser.query.get(current_user.user_id)
-    new_account = Account(
-        account_id=str(uuid.uuid4()),
-        user_id=current_user.user_id,
-        billing_address=user.address,
-        account_type='bank_account'
-    )
-    db.session.add(new_account)
-    db.session.flush()
-
-    new_bank_account = BankAccount(
-        account_id=new_account.account_id,
-        bank_acc_num=bank_account_num,
-        routing_num=routing_num
-    )
-
-    db.session.add(new_bank_account)
-    db.session.commit()
-    session['anonymous_user_id'] = current_user.user_id
-    print(f"Bank account for account {account_id} added successfully.")
-
 
 @bp.route('/api/account/payment-methods', methods=['POST'])
 @login_required
@@ -186,9 +134,10 @@ def add_payment_method():
         db.session.add(account)
         db.session.flush()  # Get the account_id
         if data['account_type'] == 'bank_account':
-            add_bank_account(account.account_id, data['bank_acc_num'], data['routing_num'])
+            create_account('bank_account', data)
+            # add_bank_account(account.account_id, data['bank_acc_num'], data['routing_num'])
         elif data['account_type'] == 'credit_card':
-            add_credit_card(account.account_id, data['cc_num'])
+            create_account('credit_card', data)
         return jsonify({'message': 'Payment method added successfully'}), 201
 
     except SQLAlchemyError as e:
@@ -212,7 +161,7 @@ def get_user_credit_cards(user_id):
             card_info = {
                 'credit_card_id': card.credit_card_id,
                 'account_id': card.account_id,
-                'cc_num': f"****{card.cc_num}",  # Mask credit card number
+                'cc_num': mask_sensitive_data(credit_card.cc_num),  # Mask credit card number
                 'exp_date': card.exp_date if card.exp_date else None
             }
             cards_data.append(card_info)
@@ -398,12 +347,12 @@ def get_user_accounts(user_id):
 
         if account.account_type == 'bank_account' and account.bank_acc_num:
             account_info['details'] = {
-                'bank_acc_num': f"****{account.bank_acc_num[-4:]}",
-                'routing_num': f"****{account.routing_num[-4:]}"
+                'bank_acc_num': mask_sensitive_data(account.bank_acc_num),
+                'routing_num': mask_sensitive_data(account.routing_num)
             }
         elif account.account_type == 'credit_card' and account.cc_num:
             account_info['details'] = {
-                'cc_num': f"****{account.cc_num[-4:]}",
+                'cc_num': mask_sensitive_data(account.cc_num),
                 'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
             }
 
@@ -411,6 +360,24 @@ def get_user_accounts(user_id):
 
     return accounts_data
 
+def create_error_response(message, status_code=500):
+    """Centralized error response handler"""
+    current_app.logger.error(f"Error: {message}")
+    return jsonify({'error': message}), status_code
+
+def create_success_response(data, message=None, status_code=200):
+    """Centralized success response handler"""
+    response = {'data': data}
+    if message:
+        response['message'] = message
+    return jsonify(response), status_code
+
+def validate_transaction_status(status):
+    """Validate transaction status"""
+    valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
+    if status not in valid_statuses:
+        raise ValueError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+    return True
 
 @bp.route('/api/account/seller_list', methods=['GET'])
 @login_required
@@ -654,6 +621,47 @@ def update_transaction_status():
             'message': str(e)
         }), 500
 
+# @bp.route('/api/account/transaction/status', methods=['PUT'])
+# @login_required
+# def update_transaction_status():
+#     data = request.get_json()
+#     try:
+#         # Get the request data
+#         print(data)
+#
+#         new_status = data['status']
+#
+#         # Validate status value
+#         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
+#         if new_status not in valid_statuses:
+#             return jsonify({
+#                 'error': 'Invalid status value',
+#                 'valid_statuses': valid_statuses
+#             }), 400
+#
+#         transaction = Transaction.query.filter_by(transaction_id=data['transaction_id']).first()
+#
+#         if not transaction:
+#             return jsonify({'error': 'Transaction not found'}), 404
+#         # Update the status
+#         transaction.status = new_status
+#         db.session.commit()
+#
+#         return jsonify({
+#             'message': 'Transaction status updated successfully',
+#             'transaction_id': data['transaction_id'],
+#             'status': new_status,
+#             'updated_at': datetime.utcnow().isoformat()
+#         }), 200
+#
+#     except Exception as e:
+#         print(e)
+#         db.session.rollback()
+#         return jsonify({
+#             'error': 'Internal server error',
+#             'message': str(e)
+#         }), 500
+
 @bp.route('/api/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
 def get_transaction_detail(transaction_id):
@@ -700,6 +708,41 @@ def get_transaction_detail(transaction_id):
             'error': 'Internal server error',
             'message': str(e)
         }), 500
+
+
+def create_account(account_type, account_details):
+    new_account = Account(
+        account_id=str(uuid.uuid4()),
+        user_id=current_user.user_id,
+        billing_address=current_user.address,
+        account_type=account_type
+    )
+    db.session.add(new_account)
+    db.session.flush()  # Get account_id for use in the specific method
+    # exp_date = datetime.strptime(account_details['exp_date'], '%Y-%m-%d').date()
+    if account_type == 'credit_card':
+        new_details = CreditCard(
+            account_id=new_account.account_id,
+            cc_num=account_details['cc_num'],
+            exp_date=datetime.strptime(account_details['exp_date'], '%Y-%m-%d').date()
+        )
+    elif account_type == 'bank_account':
+        new_details = BankAccount(
+            account_id=new_account.account_id,
+            bank_acc_num=account_details['bank_acc_num'],
+            routing_num=account_details['routing_num']
+        )
+
+    db.session.add(new_details)
+    db.session.commit()
+    session['anonymous_user_id'] = current_user.user_id
+
+
+def mask_sensitive_data(data, last_n=4):
+    """Mask sensitive data showing only last n digits"""
+    if not data:
+        return None
+    return f"****{data[-last_n:]}"
 
 @bp.route('/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
