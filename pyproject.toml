@@ -15,18 +15,32 @@ requires = [
     "python-Levenshtein",
     "pytest"
 ]
-build-backend="setuptools.build_meta"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "COMSW4111"
-authors = [{name = "Christopher Webb", email = "cdw2146@columbia.edu"}]
-description="COMSW4111"
-readme = "README.md"
 version = "0.1.0"
+description = "COMSW4111"
+readme = "README.md"
 requires-python = ">=3.7"
-
-dependencies = []
-
+dependencies = [
+    "Flask==2.2.2",
+    "Werkzeug==2.2.2",
+    "Flask-SQLAlchemy==3.0.2",
+    "Flask-Login==0.6.2",
+    "flask_httpauth==4.7.0",
+    "flask_migrate==4.0.4",
+    "flask-wtf==1.1.1",
+    "psycopg2==2.9.5",
+    "click",
+    "requests",
+    "urllib3==1.26.6",
+    "python-Levenshtein",
+    "pytest"
+]
+authors = [
+    {name = "Christopher Webb", email = "cdw2146@columbia.edu"}
+]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -38,7 +52,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-
 
 [project.license]
 file = "LICENSE"
@@ -65,66 +78,31 @@ develop = [
 [tool.black]
 color = true
 line-length = 120
-target-version = ['py310']
+target-version = ["py310"]
 skip-string-normalization = true
 
 [tool.check-manifest]
-ignore = [
-    'Assets/*'
-]
+ignore = ["Assets/*"]
 
 [tool.flake8]
-ignore = ['E203', 'W503', 'F401']
-max-line-length=120
-exclude=[
-    'tests/*'
-]
-
+ignore = ["E203", "W503", "F401"]
+max-line-length = 120
+exclude = ["tests/*"]
 
 [tool.isort]
 line_length = 120
-known_first_party = 'pydantic'
+known_first_party = "pydantic"
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 combine_as_imports = true
 
 [tool.mypy]
-python_version = '3.10'
+python_version = "3.10"
 show_error_codes = true
 ignore_missing_imports = true
-# follow_imports = 'silent'
-# strict_optional = true
-# warn_redundant_casts = true
-# warn_unused_ignores = true
-# disallow_any_generics = true
-# check_untyped_defs = true
-# no_implicit_reexport = true
-# warn_unused_configs = true
-# disallow_subclassing_any = true
-# disallow_incomplete_defs = true
-# disallow_untyped_decorators = true
-# disallow_untyped_calls = true
 
 [tool.pytest.ini_options]
-pythonpath = [
-  "."
-]
-asyncio_mode = 'strict'
-testpaths = 'tests/'
-
-dependencies = [
-    "Flask==2.2.2",
-    "Werkzeug==2.2.2",
-    "Flask-SQLAlchemy==3.0.2",
-    "Flask-Login==0.6.2",
-    "flask_httpauth==4.7.0",
-    "flask_migrate==4.0.4",
-    "flask-wtf==1.1.1",
-    "psycopg2==2.9.5",
-    "click",
-    "requests",
-    "urllib3==1.26.6",
-    "python-Levenshtein",
-    "pytest"
-]
+pythonpath = ["."]
+asyncio_mode = "strict"
+testpaths = "tests/"
