@@ -322,34 +322,15 @@ def search_listings():
 def update_listing_status():
     # Get the new status from request data
     data = request.get_json()
-    print(data["listing_id"])
-    print(data)
-
     listing_id = data['listing_id']
     try:
         # Get the listing
         listing = Listing.query.filter_by(listing_id=listing_id).first()
-        # if not listing:
-        #     return jsonify({'error': 'Listing not found'}), 404
 
-        # Verify the current user is the seller
         if listing.seller_id != current_user.user_id:
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
 
-
-        # if 'status' not in data:
-        #     return jsonify({'error': 'Status field is required'}), 400
-
         new_status = data['status']
-
-        # Validate the status - assuming these are the valid statuses
-        valid_statuses = {'active', 'inactive', 'sold', 'pending'}
-        print(new_status)
-        # if new_status not in valid_statuses:
-        #     return jsonify({
-        #         'error': 'Invalid status',
-        #         'valid_statuses': list(valid_statuses)
-        #     }), 400
 
         # Update the status and last edit time
         listing.status = new_status
