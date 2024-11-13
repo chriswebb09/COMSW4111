@@ -309,7 +309,7 @@ const AccountPage = () => {
 
                     <div className="flex-1">
                         {activeTab === 'profile' && (
-                            <div className="bg-white rounded-lg shadow p-14">
+                            <div className="bg-white rounded-lg shadow p-14 mb-10">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-semibold">Profile Information</h2>
                                     <button
