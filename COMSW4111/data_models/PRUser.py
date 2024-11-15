@@ -1,9 +1,11 @@
-from flask_sqlalchemy import SQLAlchemy
+#!/usr/bin/env python3
+
+from . import db
 from datetime import datetime
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import TEXT
 from COMSW4111.data_models.password_logic import generate_password_hash, check_password_hash
-from flask_login import UserMixin
-from . import db
 
 class PRUser(UserMixin, db.Model):
     __tablename__ = 'pr_user'

@@ -11,7 +11,6 @@ class Dispute(db.Model):
     description = db.Column(TEXT, nullable=False)
     status = db.Column(db.String(50),  db.CheckConstraint("status IN ('solved', 'unsolved')"), nullable=False)
     resolution_date = db.Column(db.Date)
-
     # Relationships
     transaction = db.relationship('Transaction', backref='pr_dispute', lazy=True)
     admin = db.relationship('Admin', backref='pr_dispute', lazy=True)
