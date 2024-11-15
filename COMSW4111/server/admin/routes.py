@@ -69,7 +69,7 @@ def update_dispute_status(dispute_id):
             return jsonify({'error': 'Dispute not found'}), 404
         dispute.status = new_status
         if new_status == 'solved':
-            dispute.resolution_date = datetime.date()
+            dispute.resolution_date = datetime.utcnow().date()
             dispute.admin_id = current_user.admin.admin_id
         db.session.commit()
         return jsonify({
@@ -96,8 +96,8 @@ def create_admin_account():
             address=form_data['address'],
             phone_number=form_data['phone_number'],
             acc_status='active',
-            t_created=datetime,
-            t_last_act=datetime
+            t_created=datetime.utcnow(),
+            t_last_act=datetime.utcnow()
         )
         new_user.set_password(form_data['password'])
         new_admin = Admin(admin_id=user_id, admin_role="super")

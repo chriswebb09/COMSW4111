@@ -13,7 +13,8 @@ import uuid
 @bp.route('/transaction', methods=['GET'])
 @login_required
 def begin_transaction():
-    return render_template('transaction.html', title='Transaction')
+    listing_id = request.args.get('listing_id')
+    return render_template('transaction.html', title='Transaction' , listing_id=listing_id)
 
 
 @bp.route('/transactions_list', methods=['GET'])

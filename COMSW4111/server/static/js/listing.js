@@ -5,7 +5,6 @@ const ListingPage  = (reportDataElems) => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [listingData, setListingData] = useState([]);
 
-
   useEffect(() => {
     const results = reportDataElems;
     printData(results);
@@ -30,7 +29,6 @@ const ListingPage  = (reportDataElems) => {
             </div>
           </div>
         </div>
-
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -38,11 +36,7 @@ const ListingPage  = (reportDataElems) => {
             <div className="lg:col-span-2">
               {/* Main Image */}
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                <img
-                    src="../static/img/placeholder.png"
-                    alt={listing.title}
-                    className="w-full h-96 object-cover"
-                />
+                <img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-96 object-cover"/>
                 {/* Thumbnail Gallery */}
                 <div className="p-4 grid grid-cols-4 gap-2">
                   <img
@@ -66,20 +60,16 @@ const ListingPage  = (reportDataElems) => {
                   {/*))}*/}
                 </div>
               </div>
-
               <div className="bg-white rounded-lg shadow-lg overflow-hidden my-6">
                 <div className="m-6">
-                  <a href="/transaction">
-                    <button
-                        className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
+                  <a href={`/transaction?listing_id=${listingData.listing_id}`}>
+                    <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
                       Start Transaction
                     </button>
                   </a>
                 </div>
               </div>
-
               {/* Property Details */}
-
               <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">{listingData.title}</h1>
                 <div className="flex items-center justify-between mb-6">
@@ -91,8 +81,6 @@ const ListingPage  = (reportDataElems) => {
                     Listed on {new Date(listingData.t_created).toLocaleDateString()}
                   </div>
                 </div>
-
-
                 {/* Description */}
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-3">Description</h2>
@@ -129,7 +117,6 @@ const ListingPage  = (reportDataElems) => {
                 </div>
               </div>
             </div>
-
             {/* Right Column - Seller Info & Actions */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
@@ -151,21 +138,15 @@ const ListingPage  = (reportDataElems) => {
                     {/*Typically responds {listingData.seller.responseTime}*/}
                   </div>
                 </div>
-
                 {/* Action Buttons */}
                 <div className="space-y-4">
-                  <button
-                      onClick={() => setIsContactModalOpen(true)}
-                      className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
-                  >
+                  <button onClick={() => setIsContactModalOpen(true)} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
                     Contact Seller
                   </button>
-                  <button
-                      className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
+                  <button className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
                     Save to Favorites
                   </button>
                 </div>
-
                 {/* Additional Info */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-500">
@@ -177,33 +158,17 @@ const ListingPage  = (reportDataElems) => {
             </div>
           </div>
         </div>
-
         {/* Contact Modal */}
         {isContactModalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-lg max-w-md w-full p-6">
                 <h3 className="text-xl font-semibold mb-4">Contact Seller</h3>
                 <div className="space-y-4">
-                  <input
-                      type="text"
-                      placeholder="Your Name"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                      type="email"
-                      placeholder="Your Email"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <textarea
-                      placeholder="Your Message"
-                      rows="4"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  ></textarea>
+                  <input type="text" placeholder="Your Name" className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                  <input type="email" placeholder="Your Email" className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                  <textarea placeholder="Your Message" rows="4" className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                   <div className="flex justify-end space-x-3">
-                    <button
-                        onClick={() => setIsContactModalOpen(false)}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                    >
+                    <button onClick={() => setIsContactModalOpen(false)} className="px-4 py-2 text-gray-600 hover:text-gray-800">
                       Cancel
                     </button>
                     <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

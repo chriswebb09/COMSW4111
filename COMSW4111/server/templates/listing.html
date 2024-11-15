@@ -2,7 +2,7 @@
 {% block content %}
     <main>
         <div id='root'></div>
-        <script type="text/babel" src="{{url_for('static', filename='js/listing/listing.js')}}"></script>
+        <script type="text/babel" src="{{url_for('static', filename='js/listing.js')}}"></script>
         <script type="text/babel">
             var listing = {{listing_data|tojson|safe}}
             const domContainer = document.querySelector('#root');

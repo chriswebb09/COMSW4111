@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <main>
+        <div id='root'></div>
+        <script type="text/babel" src="{{url_for('static', filename='js/transaction.js')}}"></script>
+        <script type="text/babel">
+            // Assign the listing ID as a string
+            var listing = '{{ listing_id|safe }}';
+            const domContainer = document.querySelector('#root');
+            ReactDOM.render(<TransactionPage passedListingId={listing} />, domContainer);
+        </script>
+    </main>
+    {#    <main>#}
+    {#        <div id='root'></div>#}
+    {#        <script type="text/babel" src="{{url_for('static', filename='js/transaction.js')}}"></script>#}
+    {#        <script type="text/babel">#}
+    {#            var new_listing_id = {{ listing_id|safe }};#}
+    {#            const domContainer = document.querySelector('#root');#}
+    {#            ReactDOM.render(<TransactionPage passed_listing_id={new_listing_id} />, domContainer);#}
+    {#        </script>#}
+    {#    </main>#}
+{% endblock %}

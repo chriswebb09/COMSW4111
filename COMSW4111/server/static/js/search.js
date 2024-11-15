@@ -43,7 +43,6 @@ const ListingsPage = () => {
     if (sortBy === 'priceHigh') return b.price - a.price;
     return 0;
   });
-
   return (
     <div className="min-h-[800px] bg-gray-100 pb-20">
       <div className="bg-white shadow">
@@ -61,13 +60,11 @@ const ListingsPage = () => {
             </button>
           </a>
         </div>
-
         <div className="mb-6 space-y-4">
           <div className="relative">
             <input type="text" placeholder="Search listings..." className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
             <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
           </div>
-
           <div className="flex gap-4 flex-wrap">
             <select className="bg-white rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="newest">Newest First</option>
@@ -75,7 +72,6 @@ const ListingsPage = () => {
               <option value="priceLow">Price: Low to High</option>
               <option value="priceHigh">Price: High to Low</option>
             </select>
-
             <select className="bg-white rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
               <option value="all">All Prices</option>
               <option value="under1000">Under $1,000</option>
@@ -84,11 +80,9 @@ const ListingsPage = () => {
             </select>
           </div>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredListings.map(listing => (
             <div key={listing.listing_id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
-
               <img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-40 object-cover" />
               <div className="p-4">
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{listing.title}</h2>
@@ -117,18 +111,16 @@ const ListingsPage = () => {
             </div>
           ))}
         </div>
-
         {filteredListings.length === 0 && (
           <div className="text-center py-12 bg-white rounded-lg shadow mt-6">
             <p className="text-gray-500 text-lg">No listings found matching your criteria</p>
             <button
-              onClick={() => {
-                setSearchTerm('');
-                setPriceRange('all');
-                setSortBy('newest');
-              }}
-              className="mt-4 text-blue-600 hover:text-blue-700"
-            >
+                onClick={() => {
+                  setSearchTerm('');
+                  setPriceRange('all');
+                  setSortBy('newest');
+                }}
+                className="mt-4 text-blue-600 hover:text-blue-700">
               Clear all filters
             </button>
           </div>

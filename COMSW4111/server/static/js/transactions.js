@@ -79,7 +79,7 @@ const TransactionListingPage = () => {
   }
 
   return (
-      <div className="max-w-6xl mx-auto p-4 bg-white rounded-lg shadow">
+      <div className="max-w-6xl mx-auto p-4 bg-white rounded-lg shadow mb-10 pb-10">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Transaction History</h1>
         </div>
@@ -94,79 +94,54 @@ const TransactionListingPage = () => {
           <table className="w-full border-collapse">
             <thead>
             <tr className="bg-gray-50">
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('transaction_id')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('transaction_id')}>
                 Transaction ID
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('t_date')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('t_date')}>
                 Date
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('buyer_id')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('buyer_id')}>
                 Buyer
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('seller_id')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('seller_id')}>
                 Seller
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('listing_id')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('listing_id')}>
                 Listing
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('agreed_price')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('agreed_price')}>
                 Price
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('serv_fee')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('serv_fee')}>
                 Service Fee
               </th>
-              <th
-                  className="p-3 text-left cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('status')}
-              >
+              <th className="p-3 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>
                 Status
               </th>
             </tr>
             </thead>
             <tbody>
             {transactions.map((transaction) => (
-                <tr
-                    key={transaction.transaction_id}
-                    className="border-t hover:bg-gray-50"
-                >
-                  <td className="p-3">{transaction.transaction_id}</td>
-                  <td className="p-3">{new Date(transaction.t_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}</td>
-                  <td className="p-3">{transaction.buyer_id}</td>
-                  <td className="p-3">{transaction.seller_id}</td>
-                  <td className="p-3">{transaction.listing_id}</td>
-                  <td className="p-3">{formatCurrency(transaction.agreed_price)}</td>
-                  <td className="p-3">{formatCurrency(transaction.serv_fee)}</td>
-                  <td className="p-3">
+                <a href={`/account/transaction/${transaction.transaction_id}`} >
+                  <tr key={transaction.transaction_id} className="border-t hover:bg-gray-50">
+                    <td className="p-3">{transaction.transaction_id}</td>
+                    <td className="p-3">{new Date(transaction.t_date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}</td>
+                    <td className="p-3">{transaction.buyer_id}</td>
+                    <td className="p-3">{transaction.seller_id}</td>
+                    <td className="p-3">{transaction.listing_id}</td>
+                    <td className="p-3">{formatCurrency(transaction.agreed_price)}</td>
+                    <td className="p-3">{formatCurrency(transaction.serv_fee)}</td>
+                    <td className="p-3">
                   <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(transaction.status)}`}>
                     {transaction.status}
                   </span>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                </a>
             ))}
             </tbody>
           </table>
@@ -181,4 +156,4 @@ const TransactionListingPage = () => {
   );
 };
 const domContainer = document.querySelector('#root');
-ReactDOM.render(<TransactionListingPage />, domContainer);
+ReactDOM.render(<TransactionListingPage/>, domContainer);

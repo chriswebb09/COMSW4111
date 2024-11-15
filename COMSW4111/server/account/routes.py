@@ -218,7 +218,7 @@ def change_password():
         if not user.check_password(data['current_password']):
             return jsonify({'error': 'Current password is incorrect'}), 400
         user.set_password(data['new_password'])
-        user.t_last_act = datetime
+        user.t_last_act = datetime.utcnow()
         db.session.commit()
         return jsonify({'message': 'Password updated successfully'}), 200
     except Exception as e:
@@ -235,7 +235,7 @@ def delete_account():
         if not user.check_password(data['password']):
             return jsonify({'error': 'Password is incorrect'}), 400
         user.acc_status = 'inactive'
-        user.t_last_act = datetime
+        user.t_last_act = datetime.utcnow()
         db.session.commit()
         return jsonify({'message': 'Account deactivated successfully'}), 200
     except Exception as e:
@@ -277,7 +277,7 @@ def get_user_accounts(user_id):
         elif account.account_type == 'credit_card' and account.cc_num:
             details = {
                 'cc_num': mask_sensitive_data(account.cc_num),
-                'exp_date': (account.exp_date or datetime).strftime('%m/%Y')
+                'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
             }
         accounts_data.append(
             {
@@ -449,7 +449,7 @@ def update_account_transaction():
             'message': 'Transaction updated successfully',
             'transaction_id': data['transaction_id'],
             'status': data['status'],
-            'updated_at': datetime.isoformat()
+            'updated_at': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
         return jsonify({
@@ -460,9 +460,11 @@ def update_account_transaction():
 @bp.route('/api/account/transaction/status', methods=['PUT'])
 @login_required
 def update_transaction_status():
+    data = request.get_json()
     try:
-        data = request.get_json()
+
         new_status = data['status']
+
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if new_status not in valid_statuses:
             return jsonify({
@@ -474,13 +476,24 @@ def update_transaction_status():
             return jsonify({'error': 'Transaction not found'}), 404
         transaction.status = new_status
         db.session.commit()
+        if new_status != "pending":
+            listing = Listing.query.filter_by(listing_id=transaction.listing_id).first()
+            print(listing.seller_id)
+            if listing.seller_id != current_user.user_id:
+                print("unauthorized")
+                return jsonify({'error': 'Unauthorized to update this listing'}), 403
+            new_listing_status = "pending"
+            listing.status = new_listing_status
+            listing.t_last_edit = datetime.utcnow()
+            db.session.commit()
         return jsonify({
             'message': 'Transaction status updated successfully',
             'transaction_id': data['transaction_id'],
             'status': new_status,
-            'updated_at': datetime.isoformat()
+            'updated_at': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
+        print(e)
         db.session.rollback()
         return jsonify({
             'error': 'Internal server error',
@@ -540,7 +553,7 @@ def create_account(account_type, account_details):
         new_details = CreditCard(
             account_id=new_account.account_id,
             cc_num=account_details['cc_num'],
-            exp_date=datetime.strptime(account_details['exp_date'], '%Y-%m-%d').date()
+            exp_date=datetime.utcnow().strptime(account_details['exp_date'], '%Y-%m-%d').date()
         )
     elif account_type == 'bank_account':
         new_details = BankAccount(
@@ -561,7 +574,7 @@ def mask_sensitive_data(data, last_n=4):
 @bp.route('/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
 def acount_transaction_detail(transaction_id):
-    return render_template('transactions/transaction_details.html', title='Transaction Detail')
+    return render_template('transaction_details.html', title='Transaction Detail')
 
 @bp.route('/account', methods=['GET', 'POST'])
 @login_required
