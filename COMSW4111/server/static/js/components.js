@@ -338,17 +338,17 @@ const BuyerDashboard = () => {
   if (!buyerData) return null;
 
   return (
-    <div className="space-y-6 pb-23">
+    <div className="space-y-6 pb-20">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-blue-50 p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium text-blue-800">Total Transactions</h3>
           <p className="text-3xl font-bold text-blue-900">{buyerData.summary.total_transactions}</p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg">
+        <div className="bg-green-50 p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium text-green-800">Total Spent</h3>
           <p className="text-3xl font-bold text-green-900">${buyerData.summary.total_spent.toFixed(2)}</p>
         </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
+        <div className="bg-purple-50 p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium text-purple-800">Service Fees</h3>
           <p className="text-3xl font-bold text-purple-900">${buyerData.summary.total_fees.toFixed(2)}</p>
         </div>
@@ -358,7 +358,7 @@ const BuyerDashboard = () => {
         <h3 className="text-xl font-semibold mb-4">Transaction Status</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(buyerData.status_summary).map(([status, count]) => (
-            <div key={status} className="p-4 rounded-lg bg-gray-50">
+            <div key={status} className="p-4 rounded-lg bg-gray-50 shadow">
               <div className="text-sm text-gray-500 capitalize">{status}</div>
               <div className="text-2xl font-bold">{count}</div>
             </div>
@@ -455,19 +455,19 @@ const SellerDashboard = () => {
     return (
         <div className="space-y-6 pb-23">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-blue-50 p-4 rounded-lg shadow">
                     <h3 className="text-lg font-medium text-blue-800">Total Sales</h3>
                     <p className="text-3xl font-bold text-blue-900">${sellerData.summary.total_sales.toFixed(2)}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
+                <div className="bg-green-50 p-4 rounded-lg shadow">
                     <h3 className="text-lg font-medium text-green-800">Net Earnings</h3>
                     <p className="text-3xl font-bold text-green-900">${sellerData.summary.net_earnings.toFixed(2)}</p>
         </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
+        <div className="bg-purple-50 p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium text-purple-800">Service Fees</h3>
           <p className="text-3xl font-bold text-purple-900">${sellerData.summary.total_fees.toFixed(2)}</p>
         </div>
-        <div className="bg-orange-50 p-4 rounded-lg">
+        <div className="bg-orange-50 p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium text-orange-800">Total Transactions</h3>
           <p className="text-3xl font-bold text-orange-900">{sellerData.summary.total_transactions}</p>
         </div>
@@ -477,7 +477,7 @@ const SellerDashboard = () => {
         <h3 className="text-xl font-semibold mb-4">Transaction Status</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(sellerData.status_summary).map(([status, count]) => (
-            <div key={status} className="p-4 rounded-lg bg-gray-50">
+            <div key={status} className="p-4 rounded-lg bg-gray-50 shadow">
               <div className="text-sm text-gray-500 capitalize">{status}</div>
               <div className="text-2xl font-bold">{count}</div>
             </div>

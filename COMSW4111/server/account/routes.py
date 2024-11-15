@@ -747,7 +747,7 @@ def mask_sensitive_data(data, last_n=4):
 @bp.route('/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
 def acount_transaction_detail(transaction_id):
-    return render_template('transaction_details.html', title='Transaction Detail')
+    return render_template('transactions/transaction_details.html', title='Transaction Detail')
 
 @bp.route('/account', methods=['GET', 'POST'])
 @login_required

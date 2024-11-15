@@ -30,7 +30,7 @@ def login():
 			session['id'] = user.user_id
 			user.t_last_act = datetime.utcnow()
 		flash('Invalid email or password', 'error')
-	return render_template('login.html')
+	return render_template('auth/login.html')
 
 
 @bp.route('/signup', methods=['GET', 'POST'])
@@ -69,7 +69,7 @@ def register():
 			db.session.rollback()
 			flash('Registration failed. Please try again.', 'error')
 
-	return render_template('signup.html')
+	return render_template('auth/signup.html')
 
 
 @bp.route('/logout')
