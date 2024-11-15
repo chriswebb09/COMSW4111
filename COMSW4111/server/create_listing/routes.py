@@ -7,4 +7,4 @@ from flask import render_template
 @bp.route('/create_listing', methods=['GET', 'POST'])
 @login_required
 def create_listing():
-    return render_template('create_listing.html', title='Create Listing')
+    return render_template('listings/create_listing.html', title='Create Listing')

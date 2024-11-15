@@ -89,7 +89,7 @@ const ListingsPage = () => {
           {filteredListings.map(listing => (
             <div key={listing.listing_id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
 
-              {/*<img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-40 object-cover" />*/}
+              <img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-40 object-cover" />
               <div className="p-4">
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{listing.title}</h2>
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>

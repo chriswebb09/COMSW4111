@@ -10,15 +10,15 @@ from sqlalchemy.exc import SQLAlchemyError
 
 @bp.route('/admin', methods=['GET'])
 def get_admin():
-    return render_template("admin.html")
+    return render_template("admin/admin.html")
 
 @bp.route('/admin/login', methods=['GET'])
 def get_admin_login():
-    return render_template("admin_login.html")
+    return render_template("admin/admin_login.html")
 
 @bp.route('/admin/signup', methods=['GET'])
 def get_admin_signup():
-    return render_template("admin_login.html")
+    return render_template("admin/admin_login.html")
 
 
 @bp.route('/api/admin/disputes', methods=['GET'])

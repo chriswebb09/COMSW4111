@@ -44,7 +44,7 @@ def listing_page(listing_id):
         "location_id": str(listing.location_id)
     }
 
-    return render_template('listing.html', title='Listing', listing_data=list_data)
+    return render_template('listings/listing.html', title='Listing', listing_data=list_data)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
