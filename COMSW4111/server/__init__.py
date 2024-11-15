@@ -12,16 +12,12 @@ from COMSW4111.config import Config
 file = Path(__file__).resolve()
 package_root_directory = file.parents[1]
 sys.path.append(str(package_root_directory))
-
 migrate = Migrate()
-
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-
 @login_manager.request_loader
 def load_user_from_request(request):
-
     auth_str = request.headers.get('Authorization')
     token = auth_str.split(' ')[1] if auth_str else ''
     if token:
@@ -38,7 +34,6 @@ def load_user(id):
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
     app.config.from_object(config_class)
-    # csrf = CSRFProtect(app)
     db.init_app(app)
     from COMSW4111.server.main import bp as main_bp
     app.register_blueprint(main_bp)
@@ -58,11 +53,9 @@ def create_app(config_class=Config):
     app.register_blueprint(dispute_bp)
     from COMSW4111.server.admin import bp as admin_bp
     app.register_blueprint(admin_bp)
-
     # Initialize extensions
     migrate.init_app(app, db)
     login_manager.init_app(app)
-
     # Create tables
     with app.app_context():
         db.create_all()

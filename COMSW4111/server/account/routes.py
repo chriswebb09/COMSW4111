@@ -597,7 +597,6 @@ def create_account(account_type, account_details):
     session['anonymous_user_id'] = current_user.user_id
 
 def mask_sensitive_data(data, last_n=4):
-    """Mask sensitive data showing only last n digits"""
     if not data:
         return None
     return f"****{data[-last_n:]}"

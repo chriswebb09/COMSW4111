@@ -9,7 +9,6 @@ class Account(db.Model):
     user_id = db.Column(db.String(50), db.ForeignKey('pr_user.user_id'))
     account_type = db.Column(db.String(50), db.CheckConstraint("account_type IN ('bank_account', 'credit_card')"))
     billing_address = db.Column(TEXT, nullable=False)
-
     # Relationships
     bank_account = db.relationship('BankAccount', backref='pr_account', uselist=False, lazy=True)
     credit_card = db.relationship('CreditCard', backref='pr_account', uselist=False, lazy=True)

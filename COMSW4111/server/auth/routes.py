@@ -42,7 +42,6 @@ def register():
 			flash('Email address already exists', 'error')
 			return redirect(url_for('auth.register'))
 		new_id = str(uuid.uuid4())
-		# Create new user
 		new_user: PRUser = PRUser(
 			user_id=new_id,
 			email=email,
@@ -64,7 +63,6 @@ def register():
 			db.session.rollback()
 			flash('Registration failed. Please try again.', 'error')
 	return render_template('auth/signup.html')
-
 
 @bp.route('/logout')
 @login_required

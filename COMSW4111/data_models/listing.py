@@ -6,7 +6,6 @@ from COMSW4111.data_models import db
 
 class Listing(db.Model):
     __tablename__ = 'pr_listing'
-
     listing_id = db.Column(db.String(50), primary_key=True)
     seller_id = db.Column(db.String(50), db.ForeignKey('pr_seller.seller_id'))
     status = db.Column(db.String(50), db.CheckConstraint("status IN ('active', 'pending', 'closed', 'completed')"), nullable=False)
@@ -18,7 +17,6 @@ class Listing(db.Model):
     meta_tag = db.Column(TEXT)
     t_created = db.Column(db.DateTime)
     t_last_edit = db.Column(db.DateTime)
-
     # Relationships
     transactions = db.relationship('Transaction', backref='pr_listing', lazy=True)
 
