@@ -1,11 +1,136 @@
 const { useState, useEffect } = React;
 
+const FormInput = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+            {label}
+        </label>
+        <input
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            {...props}
+        />
+    </div>
+);
+
+const ProfileForm = ({ formData, isEditing, onInputChange, onSubmit }) => (
+    <form onSubmit={onSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormInput
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={onInputChange}
+                disabled={!isEditing}
+            />
+            <FormInput
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={onInputChange}
+                disabled={!isEditing}
+            />
+            <FormInput
+                label="Email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={onInputChange}
+                disabled={!isEditing}
+            />
+            <FormInput
+                label="Phone"
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={onInputChange}
+                disabled={!isEditing}
+            />
+            <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                </label>
+                <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={onInputChange}
+                    disabled={!isEditing}
+                    rows="3"
+                    className="w-full px-3 py-2 border rounded-lg"
+                />
+            </div>
+        </div>
+        {isEditing && (
+            <div className="mt-6 flex justify-end">
+                <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                    Save Changes
+                </button>
+            </div>
+        )}
+    </form>
+);
+
+// Security Form Component
+const SecurityForm = ({ passwordData, error, onPasswordChange, onSubmit, onCancel }) => (
+    <form onSubmit={onSubmit} className="space-y-4">
+        <FormInput
+            label="Current Password"
+            type="password"
+            name="currentPassword"
+            value={passwordData.currentPassword}
+            onChange={onPasswordChange}
+            placeholder="Enter current password"
+        />
+        <FormInput
+            label="New Password"
+            type="password"
+            name="newPassword"
+            value={passwordData.newPassword}
+            onChange={onPasswordChange}
+            placeholder="Enter new password"
+        />
+        <FormInput
+            label="Confirm New Password"
+            type="password"
+            name="confirmPassword"
+            value={passwordData.confirmPassword}
+            onChange={onPasswordChange}
+            placeholder="Confirm new password"
+        />
+        {error && (
+            <div className="bg-red-50 text-red-700 p-3 rounded-lg flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+            </div>
+        )}
+        <div className="flex justify-end space-x-4">
+            <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-800"
+            >
+                Cancel
+            </button>
+            <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                Update Password
+            </button>
+        </div>
+    </form>
+);
+
+
 const AccountPage = () => {
     const [activeTab, setActiveTab] = useState('profile');
     const [userData, setUserData] = useState(null);
-    const [accountsData, setAccountsData] = useState(null);
     const [buyerData] = useState(null);
-    const [sellerData, setSellerData] = useState(null);
+    const [sellerData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -209,47 +334,12 @@ const AccountPage = () => {
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleProfileSubmit}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                First Name
-                                            </label>
-                                            <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} className="w-full px-3 py-2 border rounded-lg"/>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Last Name
-                                            </label>
-                                            <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} className="w-full px-3 py-2 border rounded-lg"/>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Email
-                                            </label>
-                                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} className="w-full px-3 py-2 border rounded-lg"/>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Phone
-                                            </label>
-                                            <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} disabled={!isEditing} className="w-full px-3 py-2 border rounded-lg"/>
-                                        </div>
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Address
-                                            </label>
-                                            <textarea name="address" value={formData.address} onChange={handleInputChange} disabled={!isEditing} rows="3" className="w-full px-3 py-2 border rounded-lg"/>
-                                        </div>
-                                    </div>
-                                    {isEditing && (
-                                        <div className="mt-6 flex justify-end">
-                                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                                                Save Changes
-                                            </button>
-                                        </div>
-                                    )}
-                                </form>
+                                <ProfileForm
+                                    formData={formData}
+                                    isEditing={isEditing}
+                                    onInputChange={handleInputChange}
+                                    onSubmit={handleProfileSubmit}
+                                />
                             </div>
                         )}
                         {activeTab === 'payment' && <PaymentMethodsTab />}
@@ -263,43 +353,13 @@ const AccountPage = () => {
                                     </button>
                                 </div>
                                 {isEditing ? (
-                                    <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Current Password
-                                            </label>
-                                            <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter current password"/>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                New Password
-                                            </label>
-                                            <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter new password"/>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Confirm New Password
-                                            </label>
-                                            <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Confirm new password"/>
-                                        </div>
-
-                                        {error && (
-                                            <div className="text-red-600 text-sm">
-                                                {error}
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-end space-x-4">
-                                            <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-800">
-                                                Cancel
-                                            </button>
-                                            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                Update Password
-                                            </button>
-                                        </div>
-                                    </form>
+                                    <SecurityForm
+                                        passwordData={passwordData}
+                                        error={error}
+                                        onPasswordChange={handlePasswordChange}
+                                        onSubmit={handlePasswordSubmit}
+                                        onCancel={() => setIsEditing(false)}
+                                    />
                                 ) : (
                                     <div className="text-gray-600">
                                         <p>Your password was last changed on: {new Date().toLocaleDateString()}</p>

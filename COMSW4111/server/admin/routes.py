@@ -20,7 +20,6 @@ def get_admin_login():
 def get_admin_signup():
     return render_template("admin/admin_login.html")
 
-
 @bp.route('/api/admin/disputes', methods=['GET'])
 @login_required
 def get_admin_disputes():

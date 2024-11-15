@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
 import uuid
-
 from flask import jsonify, request, current_app, session, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func, desc, case, or_
+from sqlalchemy import func, desc
 from sqlalchemy.exc import SQLAlchemyError
-
 from COMSW4111.data_models import (
     db, PRUser, Account, BankAccount, CreditCard, Buyer, Seller, Transaction, Listing
 )
-from COMSW4111.server.app import check_account_status
 from COMSW4111.server.account import bp
-
+from COMSW4111.server.app import check_account_status
 
 @bp.route('/api/account/profile', methods=['GET'])
 @login_required
@@ -161,7 +157,7 @@ def get_user_credit_cards(user_id):
             card_info = {
                 'credit_card_id': card.credit_card_id,
                 'account_id': card.account_id,
-                'cc_num': mask_sensitive_data(credit_card.cc_num),  # Mask credit card number
+                'cc_num': mask_sensitive_data(card.cc_num),  # Mask credit card number
                 'exp_date': card.exp_date if card.exp_date else None
             }
             cards_data.append(card_info)
@@ -288,7 +284,6 @@ def get_accounts():
     return jsonify({'accounts': accounts}), 200
 
 
-from sqlalchemy import case, or_
 from datetime import datetime
 
 def get_user_accounts(user_id):
@@ -350,6 +345,7 @@ def get_user_accounts(user_id):
                 'bank_acc_num': mask_sensitive_data(account.bank_acc_num),
                 'routing_num': mask_sensitive_data(account.routing_num)
             }
+
         elif account.account_type == 'credit_card' and account.cc_num:
             account_info['details'] = {
                 'cc_num': mask_sensitive_data(account.cc_num),
@@ -621,46 +617,6 @@ def update_transaction_status():
             'message': str(e)
         }), 500
 
-# @bp.route('/api/account/transaction/status', methods=['PUT'])
-# @login_required
-# def update_transaction_status():
-#     data = request.get_json()
-#     try:
-#         # Get the request data
-#         print(data)
-#
-#         new_status = data['status']
-#
-#         # Validate status value
-#         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
-#         if new_status not in valid_statuses:
-#             return jsonify({
-#                 'error': 'Invalid status value',
-#                 'valid_statuses': valid_statuses
-#             }), 400
-#
-#         transaction = Transaction.query.filter_by(transaction_id=data['transaction_id']).first()
-#
-#         if not transaction:
-#             return jsonify({'error': 'Transaction not found'}), 404
-#         # Update the status
-#         transaction.status = new_status
-#         db.session.commit()
-#
-#         return jsonify({
-#             'message': 'Transaction status updated successfully',
-#             'transaction_id': data['transaction_id'],
-#             'status': new_status,
-#             'updated_at': datetime.utcnow().isoformat()
-#         }), 200
-#
-#     except Exception as e:
-#         print(e)
-#         db.session.rollback()
-#         return jsonify({
-#             'error': 'Internal server error',
-#             'message': str(e)
-#         }), 500
 
 @bp.route('/api/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
