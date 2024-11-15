@@ -13,6 +13,35 @@ from COMSW4111.data_models import db, Account, Seller, PRUser, Listing
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/listing_images'
 
+def allowed_file(filename):
+    """Check if the file has a valid extension."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# def save_file(file):
+#     """Handle file saving and return the URL."""
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         unique_filename = f"{uuid.uuid4()}_{filename}"
+#         file_dir = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+#         os.makedirs(file_dir, exist_ok=True)
+#         file_path = os.path.join(file_dir, unique_filename)
+#         file.save(file_path)
+#         # Generate the URL for the saved image
+#         return f"/static/listing_images/{unique_filename}"
+#     return None
+
+def save_file(file):
+    """Handle file saving and return the URL."""
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4()}_{filename}"
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+        os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
+        file.save(file_path)
+        return f"/static/listing_images/{unique_filename}"
+    return None
+
+
 @bp.route('/listing/<string:listing_id>', methods=['GET'])
 @login_required
 def listing_page(listing_id):
@@ -41,9 +70,9 @@ def listing_page(listing_id):
         "location_id": str(listing.location_id)
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+#
+# def allowed_file(filename):
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
@@ -64,25 +93,20 @@ def ensure_seller_exists():
         print(seller)
     return seller
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('/api/listings/upload-images', methods=['POST'])
 @login_required
 def upload_images():
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
+
     file = request.files['images']
     if not file:
         return jsonify({'error': 'No selected file'}), 400
+
     try:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4()}_{filename}"
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-            file.save(file_path)
-            image_url = f"/static/listing_images/{unique_filename}"
+        image_url = save_file(file)
+        if image_url:
             return jsonify({
                 'message': 'Image uploaded successfully',
                 'imageUrl': image_url
@@ -92,6 +116,50 @@ def upload_images():
     except Exception as e:
         current_app.logger.error(f"Error uploading image: {str(e)}")
         return jsonify({'error': 'Failed to upload image'}), 500
+
+from flask import send_from_directory, current_app
+
+@bp.route('/static/listing_images/<filename>')
+def serve_file(filename):
+    directory = os.path.join(app.root_path, 'static/listing_images')
+    return send_from_directory(directory, filename)
+
+# def allowed_file(filename):
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# @bp.route('/api/listings/upload-images', methods=['POST'])
+# @login_required
+# def upload_images():
+#     if 'images' not in request.files:
+#         return jsonify({'error': 'No images provided'}), 400
+#     file = request.files['images']
+#     if not file:
+#         return jsonify({'error': 'No selected file'}), 400
+#     try:
+#         if file and allowed_file(file.filename):
+#             filename = secure_filename(file.filename)
+#             unique_filename = f"{uuid.uuid4()}_{filename}"
+#             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+#             file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+#             file.save(file_path)
+#             image_url = f"/static/listing_images/{unique_filename}"
+#             return jsonify({
+#                 'message': 'Image uploaded successfully',
+#                 'imageUrl': image_url
+#             }), 200
+#         else:
+#             return jsonify({'error': 'Invalid file type'}), 400
+#     except Exception as e:
+#         current_app.logger.error(f"Error uploading image: {str(e)}")
+#         return jsonify({'error': 'Failed to upload image'}), 500
+
+from flask import send_from_directory, current_app
+
+@bp.route('/static/listing_images/<path:filename>')
+def serve_image(filename):
+    """Serve images from the upload folder."""
+    directory = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+    return send_from_directory(directory, filename)
 
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
@@ -281,7 +349,6 @@ def update_listing_status():
     try:
         listing = Listing.query.filter_by(listing_id=listing_id).first()
         if listing.seller_id != current_user.user_id:
-            print("unauthorized")
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
         new_status = data['status']
         listing.status = new_status
@@ -294,7 +361,6 @@ def update_listing_status():
             't_last_edit': listing.t_last_edit.isoformat()
         }), 200
     except Exception as e:
-        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error updating listing status: {str(e)}")
         return jsonify({'error': 'Failed to update listing status'}), 500
