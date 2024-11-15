@@ -83,7 +83,7 @@ const ListingsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredListings.map(listing => (
             <div key={listing.listing_id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
-              <img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-40 object-cover" />
+              <img src="/static/listing_images/c0340fcb-dfcf-4398-9bcb-1b3bce48ff94_Screenshot_2024-11-04_at_12.30.04_PM.png" alt={listing.title} className="w-full h-40 object-cover" />
               <div className="p-4">
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{listing.title}</h2>
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>
