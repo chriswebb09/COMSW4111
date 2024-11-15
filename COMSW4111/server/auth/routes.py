@@ -27,7 +27,8 @@ def login():
 			login_user(user, remember=remember)
 			session['id'] = user.user_id
 			user.t_last_act = datetime.utcnow()
-		flash('Invalid email or password', 'error')
+		else:
+			flash('Invalid email or password', 'error')
 	return render_template('login.html')
 
 
