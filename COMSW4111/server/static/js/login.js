@@ -31,7 +31,7 @@ const LoginForm = () => {
                             Sign In
                         </button>
                         <p className="text-sm font-light text-white dark:text-gray-400 ml-14">Don’t have an account yet?
-                            <a href="/COMSW4111/server/static/js/signup" className="font-semibold tracking-wider text-gray-200 ml-3 hover:underline dark:text-primary-500">Sign up</a>
+                            <a href="/signup" className="font-semibold tracking-wider text-gray-200 ml-3 hover:underline dark:text-primary-500">Sign up</a>
                         </p>
                     </form>
                 </div>
