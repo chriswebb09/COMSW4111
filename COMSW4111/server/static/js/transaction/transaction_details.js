@@ -9,7 +9,7 @@ const TransactionDetail = ({ transactionId }) => {
   const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
-    fetchTransactionDetails();
+    fetchTransactionDetails().then(r => console.log("Transaction details fetched"));
   }, [transactionId]);
 
   const fetchTransactionDetails = async () => {

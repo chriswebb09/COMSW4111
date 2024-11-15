@@ -4,8 +4,8 @@
 develop:  ## install dependencies and build library
 	python3 -m pip install Flask==2.2.2 -e .[develop]
 	python3 -m pip uninstall urllib3 .[develop]
-	python3 -m pip install urllib3==1.26.6 -e .[develop]
-	python3 -m pip install Werkzeug==2.0.2 -e .[develop]
+	python3 -m pip install urllib3 -e .[develop]
+	python3 -m pip install Werkzeug -e .[develop]
 	python3 -m pip install requests -e .[develop]
 	python3 -m pip install Flask-Login -e .[develop]
 	python3 -m pip install flask_httpauth -e .[develop]
