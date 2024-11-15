@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
 import uuid
-from flask import jsonify, request, current_app, session, render_template
-from flask_login import login_required, current_user
+from datetime import datetime
 from sqlalchemy import func, desc
+from COMSW4111.server.account import bp
 from sqlalchemy.exc import SQLAlchemyError
+from flask_login import login_required, current_user
+from COMSW4111.server.app import check_account_status
+from flask import jsonify, request, current_app, session, render_template
 from COMSW4111.data_models import (
     db, PRUser, Account, BankAccount, CreditCard, Buyer, Seller, Transaction, Listing
 )
-from COMSW4111.server.account import bp
-from COMSW4111.server.app import check_account_status
 
 @bp.route('/api/account/profile', methods=['GET'])
 @login_required
@@ -60,7 +61,7 @@ def update_profile():
             user.address = data['address']
         if 'phone_number' in data:
             user.phone_number = data['phone_number']
-        user.t_last_act = datetime.utcnow()
+        user.t_last_act = datetime
         db.session.commit()
         return jsonify({'message': 'Profile updated successfully'}), 200
     except SQLAlchemyError as e:
@@ -218,7 +219,7 @@ def change_password():
         if not user.check_password(data['current_password']):
             return jsonify({'error': 'Current password is incorrect'}), 400
         user.set_password(data['new_password'])
-        user.t_last_act = datetime.utcnow()
+        user.t_last_act = datetime
         db.session.commit()
         return jsonify({'message': 'Password updated successfully'}), 200
     except Exception as e:
@@ -235,7 +236,7 @@ def delete_account():
         if not user.check_password(data['password']):
             return jsonify({'error': 'Password is incorrect'}), 400
         user.acc_status = 'inactive'
-        user.t_last_act = datetime.utcnow()
+        user.t_last_act = datetime
         db.session.commit()
         return jsonify({'message': 'Account deactivated successfully'}), 200
     except Exception as e:
@@ -250,83 +251,32 @@ def get_accounts():
     accounts = get_user_accounts(current_user.user_id)
     return jsonify({'accounts': accounts}), 200
 
-from datetime import datetime
-
 def get_user_accounts(user_id):
-    bank_details = (
-        BankAccount.query
-        .with_entities(
-            BankAccount.account_id,
-            BankAccount.bank_acc_num.label('bank_acc_num'),
-            BankAccount.routing_num.label('routing_num')
-        )
-        .subquery()
-    )
-    credit_details = (
-        CreditCard.query
-        .with_entities(
-            CreditCard.account_id,
-            CreditCard.cc_num.label('cc_num'),
-            CreditCard.exp_date.label('exp_date')
-        )
-        .subquery()
-    )
-    accounts = (
-        Account.query
-        .outerjoin(bank_details,
-                   (Account.account_id == bank_details.c.account_id) &
-                   (Account.account_type == 'bank_account'))
-        .outerjoin(credit_details,
-                   (Account.account_id == credit_details.c.account_id) &
-                   (Account.account_type == 'credit_card'))
-        .with_entities(
-            Account.account_id,
-            Account.account_type,
-            Account.billing_address,
-            bank_details.c.bank_acc_num,
-            bank_details.c.routing_num,
-            credit_details.c.cc_num,
-            credit_details.c.exp_date
-        )
-        .filter(Account.user_id == user_id)
-        .all()
-    )
+    bank_details = BankAccount.query.with_entities(
+        BankAccount.account_id, BankAccount.bank_acc_num, BankAccount.routing_num
+    ).subquery()
+    credit_details = CreditCard.query.with_entities(
+        CreditCard.account_id, CreditCard.cc_num, CreditCard.exp_date
+    ).subquery()
+
+    accounts = Account.query.outerjoin(
+        bank_details, (Account.account_id == bank_details.c.account_id) & (Account.account_type == 'bank_account')
+    ).outerjoin(
+        credit_details, (Account.account_id == credit_details.c.account_id) & (Account.account_type == 'credit_card')
+    ).with_entities(
+        Account.account_id, Account.account_type, Account.billing_address,
+        bank_details.c.bank_acc_num, bank_details.c.routing_num,
+        credit_details.c.cc_num, credit_details.c.exp_date
+    ).filter(Account.user_id == user_id).all()
     accounts_data = []
     for account in accounts:
-        account_info = {
-            'account_id': account.account_id,
-            'account_type': account.account_type,
-            'billing_address': account.billing_address,
-            'details': None
-        }
+        details = None
         if account.account_type == 'bank_account' and account.bank_acc_num:
-            account_info['details'] = {
-                'bank_acc_num': mask_sensitive_data(account.bank_acc_num),
-                'routing_num': mask_sensitive_data(account.routing_num)
-            }
+            details = {'bank_acc_num': mask_sensitive_data(account.bank_acc_num), 'routing_num': mask_sensitive_data(account.routing_num)}
         elif account.account_type == 'credit_card' and account.cc_num:
-            account_info['details'] = {
-                'cc_num': mask_sensitive_data(account.cc_num),
-                'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
-            }
-        accounts_data.append(account_info)
+            details = {'cc_num': mask_sensitive_data(account.cc_num), 'exp_date': (account.exp_date or datetime).strftime('%m/%Y')}
+        accounts_data.append({'account_id': account.account_id, 'account_type': account.account_type, 'billing_address': account.billing_address, 'details': details})
     return accounts_data
-
-def create_error_response(message, status_code=500):
-    current_app.logger.error(f"Error: {message}")
-    return jsonify({'error': message}), status_code
-
-def create_success_response(data, message=None, status_code=200):
-    response = {'data': data}
-    if message:
-        response['message'] = message
-    return jsonify(response), status_code
-
-def validate_transaction_status(status):
-    valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
-    if status not in valid_statuses:
-        raise ValueError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
-    return True
 
 @bp.route('/api/account/seller_list', methods=['GET'])
 @login_required
@@ -346,7 +296,6 @@ def get_seller_list():
         ).order_by(
             desc(Transaction.t_date)
         ).all()
-
         stats = db.session.query(
             func.count(Transaction.transaction_id).label('total_transactions'),
             func.sum(Transaction.agreed_price).label('total_sales'),
@@ -355,7 +304,6 @@ def get_seller_list():
             Transaction.seller_id == seller.seller_id,
             Transaction.status == 'completed'
         ).first()
-
         sales_by_listing = db.session.query(
             Listing.listing_id,
             Listing.title,
@@ -370,7 +318,6 @@ def get_seller_list():
             Listing.listing_id,
             Listing.title
         ).all()
-
         transaction_data = {
             "summary": {
                 "total_transactions": stats.total_transactions or 0,
@@ -379,16 +326,16 @@ def get_seller_list():
                 "net_earnings": float((stats.total_sales or 0) - (stats.total_fees or 0))
             },
             "transactions": [{
-                "transaction_id": tx.Transaction.transaction_id,
-                "date": tx.Transaction.t_date.strftime("%Y-%m-%d") if tx.Transaction.t_date else None,
-                "listing_id": tx.Transaction.listing_id,
-                "listing_title": tx.listing_title,
-                "listing_image": tx.listing_image,
-                "price": float(tx.Transaction.agreed_price),
-                "service_fee": float(tx.Transaction.serv_fee) if tx.Transaction.serv_fee else 0,
-                "net_amount": float(tx.Transaction.agreed_price) - float(tx.Transaction.serv_fee or 0),
-                "status": tx.Transaction.status
-            } for tx in transactions],
+                "transaction_id": transaction.Transaction.transaction_id,
+                "date": transaction.Transaction.t_date.strftime("%Y-%m-%d") if transaction.Transaction.t_date else None,
+                "listing_id": transaction.Transaction.listing_id,
+                "listing_title": transaction.listing_title,
+                "listing_image": transaction.listing_image,
+                "price": float(transaction.Transaction.agreed_price),
+                "service_fee": float(transaction.Transaction.serv_fee) if transaction.Transaction.serv_fee else 0,
+                "net_amount": float(transaction.Transaction.agreed_price) - float(transaction.Transaction.serv_fee or 0),
+                "status": transaction.Transaction.status
+            } for transaction in transactions],
             "sales_by_listing": [{
                 "listing_id": item.listing_id,
                 "listing_title": item.title,
@@ -396,16 +343,14 @@ def get_seller_list():
                 "total_amount": float(item.total_amount or 0)
             } for item in sales_by_listing]
         }
-
         status_counts = {
             'pending': 0,
             'confirming': 0,
             'confirmed': 0,
             'completed': 0
         }
-
-        for tx in transactions:
-            status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
+        for transaction in transactions:
+            status_counts[transaction.Transaction.status] = status_counts.get(transaction.Transaction.status, 0) + 1
         transaction_data['status_summary'] = status_counts
         return jsonify(transaction_data)
     except Exception as e:
@@ -430,7 +375,6 @@ def get_buyer_transactions():
         ).order_by(
             desc(Transaction.t_date)
         ).all()
-
         stats = db.session.query(
             func.count(Transaction.transaction_id).label('total_transactions'),
             func.sum(Transaction.agreed_price).label('total_spent'),
@@ -439,7 +383,6 @@ def get_buyer_transactions():
             Transaction.buyer_id == buyer.buyer_id,
             Transaction.status == 'completed'
         ).first()
-
         transaction_data = {
             "summary": {
                 "total_transactions": stats.total_transactions or 0,
@@ -447,16 +390,16 @@ def get_buyer_transactions():
                 "total_fees": float(stats.total_fees or 0)
             },
             "transactions": [{
-                "transaction_id": tx.Transaction.transaction_id,
-                "date": tx.Transaction.t_date.strftime("%Y-%m-%d") if tx.Transaction.t_date else None,
-                "listing_id": tx.Transaction.listing_id,
-                "listing_title": tx.listing_title,
-                "listing_image": tx.listing_image,
-                "price": float(tx.Transaction.agreed_price),
-                "service_fee": float(tx.Transaction.serv_fee) if tx.Transaction.serv_fee else 0,
-                "total_amount": float(tx.Transaction.agreed_price) + float(tx.Transaction.serv_fee or 0),
-                "status": tx.Transaction.status
-            } for tx in transactions]
+                "transaction_id": transaction.Transaction.transaction_id,
+                "date": transaction.Transaction.t_date.strftime("%Y-%m-%d") if transaction.Transaction.t_date else None,
+                "listing_id": transaction.Transaction.listing_id,
+                "listing_title": transaction.listing_title,
+                "listing_image": transaction.listing_image,
+                "price": float(transaction.Transaction.agreed_price),
+                "service_fee": float(transaction.Transaction.serv_fee) if transaction.Transaction.serv_fee else 0,
+                "total_amount": float(transaction.Transaction.agreed_price) + float(transaction.Transaction.serv_fee or 0),
+                "status": transaction.Transaction.status
+            } for transaction in transactions]
         }
         status_counts = {
             'pending': 0,
@@ -464,14 +407,13 @@ def get_buyer_transactions():
             'confirmed': 0,
             'completed': 0
         }
-        for tx in transactions:
-            status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
+        for transaction in transactions:
+            status_counts[transaction.Transaction.status] = status_counts.get(transaction.Transaction.status, 0) + 1
         transaction_data['status_summary'] = status_counts
         return jsonify(transaction_data)
     except Exception as e:
         current_app.logger.error(f"Error in get_buyer_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch buyer transactions"}), 500
-
 
 @bp.route('/api/account/transaction', methods=['POST'])
 @login_required
@@ -494,7 +436,7 @@ def update_account_transaction():
             'message': 'Transaction updated successfully',
             'transaction_id': data['transaction_id'],
             'status': data['status'],
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': datetime.isoformat()
         }), 200
     except Exception as e:
         return jsonify({
@@ -505,8 +447,8 @@ def update_account_transaction():
 @bp.route('/api/account/transaction/status', methods=['PUT'])
 @login_required
 def update_transaction_status():
-    data = request.get_json()
     try:
+        data = request.get_json()
         new_status = data['status']
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if new_status not in valid_statuses:
@@ -523,7 +465,7 @@ def update_transaction_status():
             'message': 'Transaction status updated successfully',
             'transaction_id': data['transaction_id'],
             'status': new_status,
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': datetime.isoformat()
         }), 200
     except Exception as e:
         db.session.rollback()
