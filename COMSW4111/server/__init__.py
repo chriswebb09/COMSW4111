@@ -8,13 +8,11 @@ from flask_migrate import Migrate
 from COMSW4111.data_models import PRUser
 from flask_login import LoginManager, current_user
 from COMSW4111.config import Config
-from flask_wtf.csrf import CSRFProtect
 
 file = Path(__file__).resolve()
 package_root_directory = file.parents[1]
 sys.path.append(str(package_root_directory))
 
-# db = SQLAlchemy()
 migrate = Migrate()
 
 login_manager = LoginManager()
@@ -36,8 +34,6 @@ def load_user_from_request(request):
 @login_manager.user_loader
 def load_user(id):
     return PRUser.query.get(id)
-            # .query.get(id))
-
 
 def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
@@ -62,11 +58,10 @@ def create_app(config_class=Config):
     app.register_blueprint(dispute_bp)
     from COMSW4111.server.admin import bp as admin_bp
     app.register_blueprint(admin_bp)
-    # Initialize extensions
 
+    # Initialize extensions
     migrate.init_app(app, db)
     login_manager.init_app(app)
-
 
     # Create tables
     with app.app_context():

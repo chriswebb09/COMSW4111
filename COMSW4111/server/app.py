@@ -1,7 +1,10 @@
 # Custom decorator for checking account status
 from functools import wraps
-from flask import jsonify
 from flask_login import LoginManager, current_user
+from sqlalchemy.exc import SQLAlchemyError
+from flask import current_app
+from flask import jsonify
+from COMSW4111.data_models import db
 
 def handle_exceptions(f):
     @wraps(f)
