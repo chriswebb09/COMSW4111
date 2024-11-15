@@ -19,7 +19,6 @@ def get_profile():
         user = PRUser.query.get(current_user.user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
-
         accounts_data = get_user_accounts(user.user_id)
         user_data = {
             'user_id': user.user_id,
@@ -48,15 +47,11 @@ def get_profile():
 @login_required
 @check_account_status
 def update_profile():
-    """Update user profile information"""
     try:
         data = request.get_json()
         user = PRUser.query.get(current_user.user_id)
-
         if not user:
             return jsonify({'error': 'User not found'}), 404
-
-        # Update fields if provided
         if 'first_name' in data:
             user.first_name = data['first_name']
         if 'last_name' in data:
@@ -65,10 +60,8 @@ def update_profile():
             user.address = data['address']
         if 'phone_number' in data:
             user.phone_number = data['phone_number']
-
         user.t_last_act = datetime.utcnow()
         db.session.commit()
-
         return jsonify({'message': 'Profile updated successfully'}), 200
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -82,7 +75,6 @@ def update_profile():
 @login_required
 @check_account_status
 def get_payment_methods():
-    """Get user's payment methods"""
     try:
         query = db.session.query(Account, BankAccount, CreditCard).outerjoin(
             BankAccount, Account.account_id == BankAccount.account_id
@@ -91,7 +83,6 @@ def get_payment_methods():
         ).filter(
             Account.user_id == current_user.user_id
         )
-
         payment_methods = [
             {
                 'account_id': account.account_id,
@@ -107,9 +98,7 @@ def get_payment_methods():
             }
             for account, bank_account, credit_card in query.all()
         ]
-
         return jsonify(payment_methods), 200
-
     except Exception as e:
         current_app.logger.error(f"Error fetching payment methods: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
@@ -118,7 +107,6 @@ def get_payment_methods():
 @login_required
 @check_account_status
 def add_payment_method():
-    """Add a new payment method"""
     try:
         data = request.get_json()
         account = Account(
@@ -128,14 +116,12 @@ def add_payment_method():
         )
         account.account_id = str(uuid.uuid4())
         db.session.add(account)
-        db.session.flush()  # Get the account_id
+        db.session.flush()
         if data['account_type'] == 'bank_account':
             create_account('bank_account', data)
-            # add_bank_account(account.account_id, data['bank_acc_num'], data['routing_num'])
         elif data['account_type'] == 'credit_card':
             create_account('credit_card', data)
         return jsonify({'message': 'Payment method added successfully'}), 201
-
     except SQLAlchemyError as e:
         db.session.rollback()
         current_app.logger.error(f"Database error adding payment method: {str(e)}")
@@ -144,10 +130,8 @@ def add_payment_method():
         current_app.logger.error(f"Error adding payment method: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 def get_user_credit_cards(user_id):
     try:
-        # Query credit cards joined with accounts for a specific user
         credit_cards = CreditCard.query \
             .join(Account, CreditCard.account_id == Account.account_id) \
             .filter(Account.user_id == user_id) \
@@ -162,17 +146,14 @@ def get_user_credit_cards(user_id):
             }
             cards_data.append(card_info)
         return cards_data
-
     except Exception as e:
         print(f"Error fetching credit cards: {str(e)}")
         return None
-
 
 @bp.route('/api/account/payment-methods/<string:account_id>', methods=['DELETE'])
 @login_required
 @check_account_status
 def delete_payment_method(account_id):
-    """Delete a payment method"""
     try:
         account = Account.query.filter_by(
             account_id=account_id,
@@ -192,12 +173,10 @@ def delete_payment_method(account_id):
 @login_required
 @check_account_status
 def get_seller_status():
-    """Get seller dashboard information"""
     try:
         seller = Seller.query.filter_by(seller_id=current_user.user_id).first()
         if not seller:
             return jsonify({'error': 'Not a seller'}), 404
-        # Get seller statistics
         stats = {
             'total_listings': len(seller.listings),
             'active_listings': sum(1 for listing in seller.listings if listing.status == 'active'),
@@ -205,42 +184,34 @@ def get_seller_status():
             'total_revenue': sum(t.agreed_price for t in seller.transactions if t.status == 'completed'),
             'avg_rating': 4.5  # This would come from a ratings system
         }
-
         return jsonify(stats), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching seller status: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account/buyer_status', methods=['GET'])
 @login_required
 @check_account_status
 def get_buyer_status():
-    """Get buyer dashboard information"""
     try:
         buyer = Buyer.query.filter_by(buyer_id=current_user.user_id).first()
         if not buyer:
             return jsonify({'error': 'Not a buyer'}), 404
-
-        # Get buyer statistics
         stats = {
             'total_purchases': len(buyer.transactions),
             'active_transactions': sum(1 for t in buyer.transactions if t.status == 'pending'),
             'completed_transactions': sum(1 for t in buyer.transactions if t.status == 'completed'),
             'total_spent': sum(t.agreed_price for t in buyer.transactions if t.status == 'completed')
         }
-
         return jsonify(stats), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching buyer status: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account/password', methods=['PUT'])
 @login_required
 @check_account_status
 def change_password():
-    """Change user password"""
     try:
         data = request.get_json()
         user = PRUser.query.get(current_user.user_id)
@@ -255,17 +226,14 @@ def change_password():
         current_app.logger.error(f"Error changing password: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account', methods=['DELETE'])
 @login_required
 def delete_account():
-    """Delete user account"""
     try:
         data = request.get_json()
         user = PRUser.query.get(current_user.user_id)
         if not user.check_password(data['password']):
             return jsonify({'error': 'Password is incorrect'}), 400
-        # Set account status to inactive instead of deleting
         user.acc_status = 'inactive'
         user.t_last_act = datetime.utcnow()
         db.session.commit()
@@ -275,7 +243,6 @@ def delete_account():
         current_app.logger.error(f"Error deactivating account: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account', methods=['GET'])
 @login_required
 def get_accounts():
@@ -283,11 +250,9 @@ def get_accounts():
     accounts = get_user_accounts(current_user.user_id)
     return jsonify({'accounts': accounts}), 200
 
-
 from datetime import datetime
 
 def get_user_accounts(user_id):
-    # Subqueries for each account type's details
     bank_details = (
         BankAccount.query
         .with_entities(
@@ -297,7 +262,6 @@ def get_user_accounts(user_id):
         )
         .subquery()
     )
-
     credit_details = (
         CreditCard.query
         .with_entities(
@@ -307,8 +271,6 @@ def get_user_accounts(user_id):
         )
         .subquery()
     )
-
-    # Main query with conditional joins
     accounts = (
         Account.query
         .outerjoin(bank_details,
@@ -329,8 +291,6 @@ def get_user_accounts(user_id):
         .filter(Account.user_id == user_id)
         .all()
     )
-
-    # Transform query results into the desired format
     accounts_data = []
     for account in accounts:
         account_info = {
@@ -339,37 +299,30 @@ def get_user_accounts(user_id):
             'billing_address': account.billing_address,
             'details': None
         }
-
         if account.account_type == 'bank_account' and account.bank_acc_num:
             account_info['details'] = {
                 'bank_acc_num': mask_sensitive_data(account.bank_acc_num),
                 'routing_num': mask_sensitive_data(account.routing_num)
             }
-
         elif account.account_type == 'credit_card' and account.cc_num:
             account_info['details'] = {
                 'cc_num': mask_sensitive_data(account.cc_num),
                 'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
             }
-
         accounts_data.append(account_info)
-
     return accounts_data
 
 def create_error_response(message, status_code=500):
-    """Centralized error response handler"""
     current_app.logger.error(f"Error: {message}")
     return jsonify({'error': message}), status_code
 
 def create_success_response(data, message=None, status_code=200):
-    """Centralized success response handler"""
     response = {'data': data}
     if message:
         response['message'] = message
     return jsonify(response), status_code
 
 def validate_transaction_status(status):
-    """Validate transaction status"""
     valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
     if status not in valid_statuses:
         raise ValueError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
@@ -379,12 +332,9 @@ def validate_transaction_status(status):
 @login_required
 def get_seller_list():
     try:
-        # Verify user has a seller account
         seller = current_user.seller
         if not seller:
             return jsonify({"error": "User is not a seller"}), 403
-
-        # Get all transactions where user is the seller
         transactions = db.session.query(
             Transaction,
             Listing.title.label('listing_title'),
@@ -397,7 +347,6 @@ def get_seller_list():
             desc(Transaction.t_date)
         ).all()
 
-        # Calculate summary statistics
         stats = db.session.query(
             func.count(Transaction.transaction_id).label('total_transactions'),
             func.sum(Transaction.agreed_price).label('total_sales'),
@@ -407,7 +356,6 @@ def get_seller_list():
             Transaction.status == 'completed'
         ).first()
 
-        # Calculate transactions per listing
         sales_by_listing = db.session.query(
             Listing.listing_id,
             Listing.title,
@@ -449,7 +397,6 @@ def get_seller_list():
             } for item in sales_by_listing]
         }
 
-        # Group transactions by status
         status_counts = {
             'pending': 0,
             'confirming': 0,
@@ -459,26 +406,19 @@ def get_seller_list():
 
         for tx in transactions:
             status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
-
         transaction_data['status_summary'] = status_counts
-
         return jsonify(transaction_data)
-
     except Exception as e:
         current_app.logger.error(f"Error in get_seller_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch seller transactions"}), 500
-
 
 @bp.route('/api/account/buyer_list', methods=['GET'])
 @login_required
 def get_buyer_transactions():
     try:
-        # Verify user has a buyer account
         buyer = current_user.buyer
         if not buyer:
             return jsonify({"error": "User is not a buyer"}), 403
-
-        # Get all transactions where user is the buyer
         transactions = db.session.query(
             Transaction,
             Listing.title.label('listing_title'),
@@ -491,7 +431,6 @@ def get_buyer_transactions():
             desc(Transaction.t_date)
         ).all()
 
-        # Calculate some summary statistics
         stats = db.session.query(
             func.count(Transaction.transaction_id).label('total_transactions'),
             func.sum(Transaction.agreed_price).label('total_spent'),
@@ -519,22 +458,16 @@ def get_buyer_transactions():
                 "status": tx.Transaction.status
             } for tx in transactions]
         }
-
-        # Group transactions by status
         status_counts = {
             'pending': 0,
             'confirming': 0,
             'confirmed': 0,
             'completed': 0
         }
-
         for tx in transactions:
             status_counts[tx.Transaction.status] = status_counts.get(tx.Transaction.status, 0) + 1
-
         transaction_data['status_summary'] = status_counts
-
         return jsonify(transaction_data)
-
     except Exception as e:
         current_app.logger.error(f"Error in get_buyer_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch buyer transactions"}), 500
@@ -545,98 +478,73 @@ def get_buyer_transactions():
 def update_account_transaction():
     try:
         data = request.get_json()
-
-        # Validate required fields
         required_fields = ['transaction_id', 'status']
         if not all(field in data for field in required_fields):
             return jsonify({
                 'error': 'Missing required fields',
                 'required': required_fields
             }), 400
-
-        # Validate status values
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if data['status'] not in valid_statuses:
             return jsonify({
                 'error': 'Invalid status value',
                 'valid_statuses': valid_statuses
             }), 400
-
         return jsonify({
             'message': 'Transaction updated successfully',
             'transaction_id': data['transaction_id'],
             'status': data['status'],
             'updated_at': datetime.utcnow().isoformat()
         }), 200
-
     except Exception as e:
         return jsonify({
             'error': 'Internal server error',
             'message': str(e)
         }), 500
-
 
 @bp.route('/api/account/transaction/status', methods=['PUT'])
 @login_required
 def update_transaction_status():
     data = request.get_json()
     try:
-        # Get the request data
-        print(data)
-
         new_status = data['status']
-
-        # Validate status value
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if new_status not in valid_statuses:
             return jsonify({
                 'error': 'Invalid status value',
                 'valid_statuses': valid_statuses
             }), 400
-
         transaction = Transaction.query.filter_by(transaction_id=data['transaction_id']).first()
-
         if not transaction:
             return jsonify({'error': 'Transaction not found'}), 404
-        # Update the status
         transaction.status = new_status
         db.session.commit()
-
         return jsonify({
             'message': 'Transaction status updated successfully',
             'transaction_id': data['transaction_id'],
             'status': new_status,
             'updated_at': datetime.utcnow().isoformat()
         }), 200
-
     except Exception as e:
-        print(e)
         db.session.rollback()
         return jsonify({
             'error': 'Internal server error',
             'message': str(e)
         }), 500
 
-
 @bp.route('/api/account/transaction/<string:transaction_id>', methods=['GET'])
 @login_required
 def get_transaction_detail(transaction_id):
     try:
-        # Query transaction with related data
         transaction = Transaction.query \
             .join(Buyer, Transaction.buyer_id == Buyer.buyer_id) \
             .join(Seller, Transaction.seller_id == Seller.seller_id) \
             .filter(Transaction.transaction_id == transaction_id) \
             .first()
-
         if not transaction:
             return jsonify({'error': 'Transaction not found'}), 404
-
-        # Get buyer and seller account details
         buyer_account = Account.query.filter_by(account_id=transaction.pr_buyer.account_id).first()
         seller_account = Account.query.filter_by(account_id=transaction.pr_seller.account_id).first()
-
-        # Format response
         transaction_data = {
             'transaction_id': transaction.transaction_id,
             'date': transaction.t_date.strftime('%Y-%m-%d'),
@@ -656,15 +564,12 @@ def get_transaction_detail(transaction_id):
                 'billing_address': seller_account.billing_address
             }
         }
-
         return jsonify(transaction_data), 200
-
     except Exception as e:
         return jsonify({
             'error': 'Internal server error',
             'message': str(e)
         }), 500
-
 
 def create_account(account_type, account_details):
     new_account = Account(
@@ -675,7 +580,6 @@ def create_account(account_type, account_details):
     )
     db.session.add(new_account)
     db.session.flush()  # Get account_id for use in the specific method
-    # exp_date = datetime.strptime(account_details['exp_date'], '%Y-%m-%d').date()
     if account_type == 'credit_card':
         new_details = CreditCard(
             account_id=new_account.account_id,
@@ -688,11 +592,9 @@ def create_account(account_type, account_details):
             bank_acc_num=account_details['bank_acc_num'],
             routing_num=account_details['routing_num']
         )
-
     db.session.add(new_details)
     db.session.commit()
     session['anonymous_user_id'] = current_user.user_id
-
 
 def mask_sensitive_data(data, last_n=4):
     """Mask sensitive data showing only last n digits"""

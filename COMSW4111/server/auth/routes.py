@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-from flask import render_template, redirect, url_for, flash, request, session
-from flask_login import login_user, logout_user, login_required, current_user
+
 import uuid
-from COMSW4111.data_models import PRUser
-from COMSW4111.data_models import Account
-from COMSW4111.data_models import db
 from datetime import datetime
 from COMSW4111.server.auth import bp
-
+from COMSW4111.data_models import PRUser, db
+from flask import render_template, redirect, url_for, flash, request, session
+from flask_login import login_user, logout_user, login_required, current_user
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -54,9 +52,7 @@ def register():
 			phone_number=request.form.get('phone_number'),
 			acc_status='active'
 		)
-
 		new_user.set_password(request.form.get('password'))
-
 		try:
 			db.session.add(new_user)
 			db.session.commit()
@@ -65,10 +61,8 @@ def register():
 			login_user(new_user, remember=True)
 			return redirect(url_for('auth.login'))
 		except Exception as e:
-			print(e)
 			db.session.rollback()
 			flash('Registration failed. Please try again.', 'error')
-
 	return render_template('auth/signup.html')
 
 

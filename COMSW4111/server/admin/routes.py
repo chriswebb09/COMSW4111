@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from flask import jsonify, request, current_app, render_template
-from flask_login import login_required, current_user
-from datetime import datetime
 import uuid
-from COMSW4111.data_models import db, PRUser, Admin, Dispute, Transaction, Buyer
+from datetime import datetime
 from COMSW4111.server.admin import bp
 from sqlalchemy.exc import SQLAlchemyError
+from flask_login import login_required, current_user
+from flask import jsonify, request, current_app, render_template
+from COMSW4111.data_models import db, PRUser, Admin, Dispute, Transaction, Buyer
 
 @bp.route('/admin', methods=['GET'])
 def get_admin():
@@ -27,7 +27,6 @@ def get_admin_disputes():
     try:
         if not current_user.admin:
             return jsonify({'error': 'Unauthorized access'}), 403
-
         disputes = db.session.query(
             Dispute,
             Transaction,
