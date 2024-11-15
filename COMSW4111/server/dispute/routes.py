@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
-from COMSW4111.server.dispute import bp
-from flask import request, jsonify, current_app, render_template
-from flask_login import login_required, current_user
-from datetime import datetime
 import uuid
-from sqlalchemy import exc
+from datetime import datetime
+from sqlalchemy import or_, exc
 from COMSW4111.data_models import db
-from sqlalchemy import or_
-from COMSW4111.data_models.transaction import Transaction
-from COMSW4111.data_models.dispute import Dispute
+from COMSW4111.server.dispute import bp
+from flask_login import login_required, current_user
+from COMSW4111.data_models import Transaction, Dispute
+from flask import request, jsonify, current_app, render_template
+
 
 @bp.route('/dispute', methods=['GET'])
 @login_required
