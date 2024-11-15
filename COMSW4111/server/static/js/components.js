@@ -16,15 +16,11 @@ const PaymentMethodsList = ({paymentMethods, onDelete}) => {
         <div className="space-y-4">
             {paymentMethods && paymentMethods.length > 0 ? (
                 paymentMethods.map((method) => (
-                    <div
-                        key={method.account_id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                    >
+                    <div key={method.account_id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                         <div className="flex items-center space-x-4">
                             <div className={`text-md ${method.account_type === 'credit_card' ? 'text-grey-600' : 'text-black'}`}>
                                 {method.account_type}
                             </div>
-
                             <div>
                                 <div className="font-medium">
                                     {method.account_type === 'credit_card' ? (
@@ -45,12 +41,7 @@ const PaymentMethodsList = ({paymentMethods, onDelete}) => {
                                 </div>
                             </div>
                         </div>
-
-                        <button
-                            onClick={() => onDelete(method.account_id)}
-                            className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100"
-                            aria-label="Delete payment method"
-                        >
+                        <button onClick={() => onDelete(method.account_id)} className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-gray-100" aria-label="Delete payment method">
                             ✕
                         </button>
                     </div>
@@ -113,7 +104,7 @@ const PaymentForm = ({onSubmit, onCancel}) => {
             }
 
             const result = await response.json();
-            // onSubmit(result);
+            onSubmit(result);
         } catch (error) {
             console.error('Error adding payment method:', error);
         }

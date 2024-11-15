@@ -1,21 +1,28 @@
-<nav class="bg-gray-900 text-white pt-5 pb-5">
+<nav class="bg-gray-900 text-white pt-3 pb-3">
     <div class="flex w-full items-center">
-        <a class="ml-20 w-3/4 text-lg font-bold" href="/">COMSW4111.</a>
-        <div class="dropdown inline-block relative pl-60">
-            <button class="text-white font-semibold inline-flex pl-10 pr-20 hover:border-gray-200">
+        <a class="ml-20 w-3/4 text-md font-bold" href="/">COMSW4111</a>
+        <div class="dropdown inline-block relative pl-[50px]">
+            <button class="text-white font-semibold inline-flex pl-10 pr-10 hover:border-gray-200">
                 {% if current_user.is_authenticated %}
-                    <span class="mr-8 ml-8 text-md hover:text-gray-200">Account</span>
+                    <a href="/account">
+                        <span class="inline-flex p-3 relative w-18 h-18 bg-blue-700 rounded-full mr-1 ml-12 text-lg items-center">
+                            <span class="">{{current_user.first_name[0] }}{{ current_user.last_name[0]}}</span>
+                        </span>
+                    </a>
                 {% else %}
-                    <a class="mr-8 ml-8 text-md hover:text-gray-200" href="/login">Login</a>
+                    <a class="mr-8 ml-8 hover:text-gray-200" href="/login">Login</a>
                 {% endif %}
             </button>
-            <ul class="dropdown-menu absolute hidden text-gray-700 pt-5">
+            <ul class="dropdown-menu absolute hidden text-gray-700 text-sm pt-3">
                 {% if current_user.is_authenticated %}
                     <li>
-                        <a class="bg-gray-900 hover:bg-gray-400 py-5 pl-20 pr-20 block whitespace-no-wrap text-white tracking-wide border-b-2 border-t-2 border-gray-200" href="account">Dashboard</a>
+                        <a class="bg-gray-900 hover:bg-gray-300 py-4 pl-20 pr-20 block whitespace-no-wrap text-white border-gray-200" href="/transactions_list">Transactions</a>
+                    </li>
+                     <li>
+                        <a class="bg-gray-900 hover:bg-gray-300 py-4 pl-20 pr-10 block whitespace-no-wrap text-white border-b-2 border-t-2 border-gray-200" href="/create_listing">Create Listing</a>
                     </li>
                     <li>
-                        <a class="bg-gray-900 hover:bg-gray-400 pt-5 pb-5 pl-20 pr-20 block whitespace-no-wrap tracking-wide text-white" href="/logout">Log Out</a>
+                        <a class="bg-gray-900 hover:bg-gray-300 py-5 pl-20 pr-20 block whitespace-no-wrap text-white" href="/logout">Log Out</a>
                     </li>
                 {% endif %}
             </ul>

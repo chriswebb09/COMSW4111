@@ -40,13 +40,14 @@ def listing_page(listing_id):
         "t_last_edit": listing.t_last_edit,
         "location_id": str(listing.location_id)
     }
-    return render_template('listings/listing.html', title='Listing', listing_data=list_data)
+    return render_template('listing.html', title='Listing', listing_data=list_data)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
+    print(seller)
     if not seller:
         account = Account.query.filter_by(user_id=current_user.user_id).first()
         if not account:
@@ -60,6 +61,7 @@ def ensure_seller_exists():
         seller = Seller(seller_id=current_user.user_id, account_id=account.account_id)
         db.session.add(seller)
         db.session.commit()
+        print(seller)
     return seller
 
 def allowed_file(filename):
@@ -94,13 +96,15 @@ def upload_images():
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
 def create_listing():
+    print("HERE")
+    data = request.form
+    print(data)
     try:
         seller = ensure_seller_exists()
-        data = request.form
-        required_fields = ['title', 'price', 'description']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'Missing required field: {field}'}), 400
+        # required_fields = ['title', 'price', 'description']
+        # for field in required_fields:
+        #     if not data.get(field):
+        #         return jsonify({'error': f'Missing required field: {field}'}), 400
         image_url = None
         if 'images' in request.files:
             file = request.files['images']
@@ -125,21 +129,30 @@ def create_listing():
             t_created=current_time,
             t_last_edit=current_time
         )
+        print(new_listing)
         db.session.add(new_listing)
         db.session.commit()
+        print(new_listing)
+        print(new_listing.listing_id)
+        print(new_listing.title)
+        print(new_listing.t_last_edit)
+        print(new_listing.t_created)
         return jsonify({
             'message': 'Listing created successfully',
             'listing_id': new_listing.listing_id
         }), 201
     except ValueError as ve:
+        print(ve)
         db.session.rollback()
         current_app.logger.error(f"Validation error: {str(ve)}")
         return jsonify({'error': str(ve)}), 400
     except exc.IntegrityError as e:
+        print()
         db.session.rollback()
         current_app.logger.error(f"Database integrity error: {str(e)}")
         return jsonify({'error': 'Database integrity error'}), 400
     except Exception as e:
+        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error creating listing: {str(e)}")
         return jsonify({'error': 'Failed to create listing'}), 500
@@ -161,8 +174,8 @@ def get_listing(listing_id):
             'list_image': listing.list_image,
             'location_id': listing.location_id,
             'meta_tag': listing.meta_tag,
-            't_created': listing.t_created.isoformat(),
-            't_last_edit': listing.t_last_edit.isoformat()
+            't_created': listing.t_created.utcnow().isoformat(),
+            't_last_edit': listing.t_last_edit.utcnow().isoformat()
         }), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching listing: {str(e)}")
@@ -240,6 +253,7 @@ def search_listings():
         if meta_tag:
             query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
         listings = query.all()
+        print(listings)
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
@@ -250,8 +264,8 @@ def search_listings():
             'list_image': listing.list_image,
             'location_id': listing.location_id,
             'meta_tag': listing.meta_tag,
-            't_created': listing.t_created.isoformat(),
-            't_last_edit': listing.t_last_edit.isoformat()
+            't_created': listing.t_created.utcnow().isoformat(),
+            't_last_edit': listing.t_last_edit.utcnow().isoformat()
         } for listing in listings]
         return jsonify(results), 200
     except Exception as e:
@@ -263,9 +277,11 @@ def search_listings():
 def update_listing_status():
     data = request.get_json()
     listing_id = data['listing_id']
+    print(data)
     try:
         listing = Listing.query.filter_by(listing_id=listing_id).first()
         if listing.seller_id != current_user.user_id:
+            print("unauthorized")
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
         new_status = data['status']
         listing.status = new_status
@@ -278,6 +294,7 @@ def update_listing_status():
             't_last_edit': listing.t_last_edit.isoformat()
         }), 200
     except Exception as e:
+        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error updating listing status: {str(e)}")
         return jsonify({'error': 'Failed to update listing status'}), 500
