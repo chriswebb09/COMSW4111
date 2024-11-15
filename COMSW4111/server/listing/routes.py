@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
+import os
+import uuid
+from sqlalchemy import exc
+from datetime import datetime
 from COMSW4111.server.listing import bp
+from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from flask import render_template, request, jsonify, current_app
-from werkzeug.utils import secure_filename
-import os
-from datetime import datetime
-import uuid
 from COMSW4111.data_models import db, Account, Seller, PRUser, Listing
-from sqlalchemy import exc
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/listing_images'
@@ -46,8 +46,10 @@ def listing_page(listing_id):
 
     return render_template('listings/listing.html', title='Listing', listing_data=list_data)
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
@@ -114,12 +116,8 @@ def upload_images():
 @login_required
 def create_listing():
     try:
-        # Ensure user is a seller
         seller = ensure_seller_exists()
-
-        # Handle form data
         data = request.form
-
         # Validate required fields
         required_fields = ['title', 'price', 'description']
         for field in required_fields:
@@ -189,7 +187,6 @@ def get_listing(listing_id):
         listing = Listing.query.get(listing_id)
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
-
         return jsonify({
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
@@ -213,12 +210,9 @@ def get_listing(listing_id):
 def update_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
-
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
-
         data = request.get_json()
-
         # Update fields if provided
         if 'title' in data:
             listing.title = data['title']
@@ -234,12 +228,8 @@ def update_listing(listing_id):
             listing.location_id = data['location_id']
         if 'meta_tag' in data:
             listing.meta_tag = data['meta_tag']
-
-        # Update last edit timestamp
         listing.t_last_edit = datetime.utcnow()
-
         db.session.commit()
-
         return jsonify({
             'message': 'Listing updated successfully',
             'listing_id': listing_id
@@ -261,13 +251,10 @@ def update_listing(listing_id):
 def delete_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
-
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
-
         db.session.delete(listing)
         db.session.commit()
-
         return jsonify({
             'message': 'Listing deleted successfully'
         }), 200
@@ -286,7 +273,6 @@ def search_listings():
         min_price = request.args.get('min_price', type=float)
         max_price = request.args.get('max_price', type=float)
         meta_tag = request.args.get('meta_tag', '')
-
         query = Listing.query
         if title:
             query = query.filter(Listing.title.ilike(f'%{title}%'))
@@ -311,7 +297,6 @@ def search_listings():
             't_created': listing.t_created.isoformat(),
             't_last_edit': listing.t_last_edit.isoformat()
         } for listing in listings]
-
         return jsonify(results), 200
 
     except Exception as e:
@@ -321,25 +306,19 @@ def search_listings():
 @bp.route('/api/listings/status', methods=['PATCH'])
 @login_required
 def update_listing_status():
-    # Get the new status from request data
     data = request.get_json()
     listing_id = data['listing_id']
-    print(data)
     try:
         # Get the listing
         listing = Listing.query.filter_by(listing_id=listing_id).first()
-
         if listing.seller_id != current_user.user_id:
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
 
         new_status = data['status']
-
         # Update the status and last edit time
         listing.status = new_status
         listing.t_last_edit = datetime.utcnow()
-        print(listing)
         db.session.commit()
-
         return jsonify({
             'message': 'Listing status updated successfully',
             'listing_id': listing_id,
