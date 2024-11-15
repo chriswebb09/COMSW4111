@@ -22,12 +22,9 @@ def listing_page(listing_id):
         .filter(Listing.listing_id == listing_id)
         .first()
     )
-
     if not result:
         return None
-
     listing, seller = result
-
     list_data = {
         "listing_id": str(listing.listing_id),
         "seller_id": str(listing.seller_id),
@@ -43,13 +40,10 @@ def listing_page(listing_id):
         "t_last_edit": listing.t_last_edit,
         "location_id": str(listing.location_id)
     }
-
     return render_template('listings/listing.html', title='Listing', listing_data=list_data)
-
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
@@ -68,49 +62,34 @@ def ensure_seller_exists():
         db.session.commit()
     return seller
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @bp.route('/api/listings/upload-images', methods=['POST'])
 @login_required
 def upload_images():
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
-
     file = request.files['images']
-
     if not file:
         return jsonify({'error': 'No selected file'}), 400
-
     try:
         if file and allowed_file(file.filename):
-            # Create unique filename
             filename = secure_filename(file.filename)
             unique_filename = f"{uuid.uuid4()}_{filename}"
-
-            # Ensure upload directory exists
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-            # Save file
             file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
             file.save(file_path)
-
-            # Generate URL
             image_url = f"/static/listing_images/{unique_filename}"
-
             return jsonify({
                 'message': 'Image uploaded successfully',
                 'imageUrl': image_url
             }), 200
         else:
             return jsonify({'error': 'Invalid file type'}), 400
-
     except Exception as e:
         current_app.logger.error(f"Error uploading image: {str(e)}")
         return jsonify({'error': 'Failed to upload image'}), 500
-
 
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
@@ -118,29 +97,20 @@ def create_listing():
     try:
         seller = ensure_seller_exists()
         data = request.form
-        # Validate required fields
         required_fields = ['title', 'price', 'description']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'Missing required field: {field}'}), 400
-
-        # Handle image upload if present
         image_url = None
         if 'images' in request.files:
             file = request.files['images']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 unique_filename = f"{uuid.uuid4()}_{filename}"
-
-                # Ensure upload directory exists
                 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-                # Save file
                 file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(file_path)
                 image_url = f"/static/listing_images/{unique_filename}"
-
-        # Create new listing
         current_time = datetime.utcnow()
         new_listing = Listing(
             listing_id=str(uuid.uuid4()),
@@ -155,30 +125,24 @@ def create_listing():
             t_created=current_time,
             t_last_edit=current_time
         )
-
         db.session.add(new_listing)
         db.session.commit()
-
         return jsonify({
             'message': 'Listing created successfully',
             'listing_id': new_listing.listing_id
         }), 201
-
     except ValueError as ve:
         db.session.rollback()
         current_app.logger.error(f"Validation error: {str(ve)}")
         return jsonify({'error': str(ve)}), 400
-
     except exc.IntegrityError as e:
         db.session.rollback()
         current_app.logger.error(f"Database integrity error: {str(e)}")
         return jsonify({'error': 'Database integrity error'}), 400
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error creating listing: {str(e)}")
         return jsonify({'error': 'Failed to create listing'}), 500
-
 
 @bp.route('/api/listings/<string:listing_id>', methods=['GET'])
 @login_required
@@ -200,7 +164,6 @@ def get_listing(listing_id):
             't_created': listing.t_created.isoformat(),
             't_last_edit': listing.t_last_edit.isoformat()
         }), 200
-
     except Exception as e:
         current_app.logger.error(f"Error fetching listing: {str(e)}")
         return jsonify({'error': 'Failed to fetch listing'}), 500
@@ -213,7 +176,6 @@ def update_listing(listing_id):
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
         data = request.get_json()
-        # Update fields if provided
         if 'title' in data:
             listing.title = data['title']
         if 'description' in data:
@@ -234,17 +196,14 @@ def update_listing(listing_id):
             'message': 'Listing updated successfully',
             'listing_id': listing_id
         }), 200
-
     except exc.IntegrityError as e:
         db.session.rollback()
         current_app.logger.error(f"Database integrity error: {str(e)}")
         return jsonify({'error': 'Database integrity error'}), 400
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating listing: {str(e)}")
         return jsonify({'error': 'Failed to update listing'}), 500
-
 
 @bp.route('/api/listings/<string:listing_id>', methods=['DELETE'])
 @login_required
@@ -258,12 +217,10 @@ def delete_listing(listing_id):
         return jsonify({
             'message': 'Listing deleted successfully'
         }), 200
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error deleting listing: {str(e)}")
         return jsonify({'error': 'Failed to delete listing'}), 500
-
 
 @bp.route('/api/listing/search', methods=['GET'])
 @login_required
@@ -282,7 +239,6 @@ def search_listings():
             query = query.filter(Listing.price <= max_price)
         if meta_tag:
             query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
-
         listings = query.all()
         results = [{
             'listing_id': listing.listing_id,
@@ -298,7 +254,6 @@ def search_listings():
             't_last_edit': listing.t_last_edit.isoformat()
         } for listing in listings]
         return jsonify(results), 200
-
     except Exception as e:
         current_app.logger.error(f"Error searching listings: {str(e)}")
         return jsonify({'error': 'Failed to search listings'}), 500
@@ -309,13 +264,10 @@ def update_listing_status():
     data = request.get_json()
     listing_id = data['listing_id']
     try:
-        # Get the listing
         listing = Listing.query.filter_by(listing_id=listing_id).first()
         if listing.seller_id != current_user.user_id:
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
-
         new_status = data['status']
-        # Update the status and last edit time
         listing.status = new_status
         listing.t_last_edit = datetime.utcnow()
         db.session.commit()
@@ -325,7 +277,6 @@ def update_listing_status():
             'status': new_status,
             't_last_edit': listing.t_last_edit.isoformat()
         }), 200
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating listing status: {str(e)}")
