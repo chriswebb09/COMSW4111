@@ -43,7 +43,6 @@ def get_profile():
         current_app.logger.error(f"Error fetching profile: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
-
 @bp.route('/api/account/profile', methods=['PUT'])
 @login_required
 @check_account_status
@@ -110,13 +109,13 @@ def get_payment_methods():
 def add_payment_method():
     try:
         data = request.get_json()
-        account = Account(
+        payment_account = Account(
             user_id=current_user.user_id,
             account_type=data['account_type'],
             billing_address=data['billing_address']
         )
-        account.account_id = str(uuid.uuid4())
-        db.session.add(account)
+        payment_account.account_id = str(uuid.uuid4())
+        db.session.add(payment_account)
         db.session.flush()
         if data['account_type'] == 'bank_account':
             create_account('bank_account', data)
@@ -258,7 +257,6 @@ def get_user_accounts(user_id):
     credit_details = CreditCard.query.with_entities(
         CreditCard.account_id, CreditCard.cc_num, CreditCard.exp_date
     ).subquery()
-
     accounts = Account.query.outerjoin(
         bank_details, (Account.account_id == bank_details.c.account_id) & (Account.account_type == 'bank_account')
     ).outerjoin(
@@ -272,10 +270,23 @@ def get_user_accounts(user_id):
     for account in accounts:
         details = None
         if account.account_type == 'bank_account' and account.bank_acc_num:
-            details = {'bank_acc_num': mask_sensitive_data(account.bank_acc_num), 'routing_num': mask_sensitive_data(account.routing_num)}
+            details = {
+                'bank_acc_num': mask_sensitive_data(account.bank_acc_num),
+                'routing_num': mask_sensitive_data(account.routing_num)
+            }
         elif account.account_type == 'credit_card' and account.cc_num:
-            details = {'cc_num': mask_sensitive_data(account.cc_num), 'exp_date': (account.exp_date or datetime).strftime('%m/%Y')}
-        accounts_data.append({'account_id': account.account_id, 'account_type': account.account_type, 'billing_address': account.billing_address, 'details': details})
+            details = {
+                'cc_num': mask_sensitive_data(account.cc_num),
+                'exp_date': (account.exp_date or datetime).strftime('%m/%Y')
+            }
+        accounts_data.append(
+            {
+                'account_id': account.account_id,
+                'account_type': account.account_type,
+                'billing_address': account.billing_address,
+                'details': details
+            }
+        )
     return accounts_data
 
 @bp.route('/api/account/seller_list', methods=['GET'])
@@ -333,7 +344,8 @@ def get_seller_list():
                 "listing_image": transaction.listing_image,
                 "price": float(transaction.Transaction.agreed_price),
                 "service_fee": float(transaction.Transaction.serv_fee) if transaction.Transaction.serv_fee else 0,
-                "net_amount": float(transaction.Transaction.agreed_price) - float(transaction.Transaction.serv_fee or 0),
+                "net_amount": float(transaction.Transaction.agreed_price) - float(
+                    transaction.Transaction.serv_fee or 0),
                 "status": transaction.Transaction.status
             } for transaction in transactions],
             "sales_by_listing": [{
@@ -397,7 +409,8 @@ def get_buyer_transactions():
                 "listing_image": transaction.listing_image,
                 "price": float(transaction.Transaction.agreed_price),
                 "service_fee": float(transaction.Transaction.serv_fee) if transaction.Transaction.serv_fee else 0,
-                "total_amount": float(transaction.Transaction.agreed_price) + float(transaction.Transaction.serv_fee or 0),
+                "total_amount": float(transaction.Transaction.agreed_price) + float(
+                    transaction.Transaction.serv_fee or 0),
                 "status": transaction.Transaction.status
             } for transaction in transactions]
         }
@@ -514,6 +527,7 @@ def get_transaction_detail(transaction_id):
         }), 500
 
 def create_account(account_type, account_details):
+    new_details = None
     new_account = Account(
         account_id=str(uuid.uuid4()),
         user_id=current_user.user_id,
@@ -534,9 +548,10 @@ def create_account(account_type, account_details):
             bank_acc_num=account_details['bank_acc_num'],
             routing_num=account_details['routing_num']
         )
-    db.session.add(new_details)
-    db.session.commit()
-    session['anonymous_user_id'] = current_user.user_id
+    if new_details is not None:
+        db.session.add(new_details)
+        db.session.commit()
+        session['anonymous_user_id'] = current_user.user_id
 
 def mask_sensitive_data(data, last_n=4):
     if not data:
