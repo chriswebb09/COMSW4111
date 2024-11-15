@@ -2,18 +2,12 @@
 
 from COMSW4111.server.listing import bp
 from flask_login import login_required, current_user
-from pprint import pformat
-from flask import render_template, session, request, redirect, json, jsonify
-from flask import Blueprint, request, jsonify, current_app
+from flask import render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 import uuid
-from COMSW4111.data_models import db
-from COMSW4111.data_models import Account
-from COMSW4111.data_models import Seller
-from COMSW4111.data_models import PRUser
-from COMSW4111.data_models import Listing
+from COMSW4111.data_models import db, Account, Seller, PRUser, Listing
 from sqlalchemy import exc
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -60,7 +54,13 @@ def ensure_seller_exists():
     if not seller:
         account = Account.query.filter_by(user_id=current_user.user_id).first()
         if not account:
-            raise ValueError("No account found for user")
+            account = Account(
+                account_id=str(uuid.uuid4()),
+                user_id=current_user.user_id,
+                billing_address=current_user.address
+            )
+            db.session.add(account)
+            db.session.commit()
         seller = Seller(seller_id=current_user.user_id, account_id=account.account_id)
         db.session.add(seller)
         db.session.commit()
