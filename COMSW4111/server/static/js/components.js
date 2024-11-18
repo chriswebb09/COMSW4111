@@ -76,12 +76,10 @@ const PaymentForm = ({onSubmit, onCancel}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const paymentData = {
             account_type: formData.account_type,
             billing_address: formData.billing_address
         };
-
         if (formData.account_type === 'credit_card') {
             paymentData.cc_num = formData.cc_num;
             paymentData.exp_date = formData.exp_date;
@@ -89,7 +87,6 @@ const PaymentForm = ({onSubmit, onCancel}) => {
             paymentData.bank_acc_num = formData.bank_acc_num;
             paymentData.routing_num = formData.routing_num;
         }
-
         try {
             const response = await fetch('/api/account/payment-methods', {
                 method: 'POST',
@@ -98,11 +95,9 @@ const PaymentForm = ({onSubmit, onCancel}) => {
                 },
                 body: JSON.stringify(paymentData)
             });
-
             if (!response.ok) {
                 throw new Error('Failed to add payment method');
             }
-
             const result = await response.json();
             onSubmit(result);
         } catch (error) {
@@ -126,7 +121,6 @@ const PaymentForm = ({onSubmit, onCancel}) => {
                     <option value="bank_account">Bank Account</option>
                 </select>
             </div>
-
             {formData.account_type === 'credit_card' ? (
                 <>
                     <div>

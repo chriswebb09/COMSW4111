@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 from pathlib import Path
-from flask import Flask, request
+from flask import Flask, Blueprint, request
 from COMSW4111.data_models import db
 from flask_migrate import Migrate
 from COMSW4111.data_models import PRUser
@@ -35,6 +36,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, template_folder="templates")
     app.config.from_object(config_class)
     db.init_app(app)
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'listing_images')
     from COMSW4111.server.main import bp as main_bp
     app.register_blueprint(main_bp)
     from COMSW4111.server.auth import bp as auth_bp
@@ -53,10 +55,9 @@ def create_app(config_class=Config):
     app.register_blueprint(dispute_bp)
     from COMSW4111.server.admin import bp as admin_bp
     app.register_blueprint(admin_bp)
-    # Initialize extensions
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    # Create tables
     with app.app_context():
         db.create_all()
     return app
+

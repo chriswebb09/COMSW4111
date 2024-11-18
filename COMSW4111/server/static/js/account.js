@@ -61,10 +61,7 @@ const ProfileForm = ({ formData, isEditing, onInputChange, onSubmit }) => (
         </div>
         {isEditing && (
             <div className="mt-6 flex justify-end">
-                <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
+                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                     Save Changes
                 </button>
             </div>
@@ -199,24 +196,19 @@ const AccountPage = () => {
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
         const { currentPassword, newPassword, confirmPassword } = passwordData;
-
         if (!currentPassword || !newPassword || !confirmPassword) {
             setError('All fields are required');
             return;
         }
-
         if (newPassword !== confirmPassword) {
             setError('New passwords do not match');
             return;
         }
-
         if (newPassword.length < 8) {
             setError('New password must be at least 8 characters long');
             return;
         }
-
         try {
             const response = await fetch('/api/account/password', {
                 method: 'PUT',
@@ -228,13 +220,10 @@ const AccountPage = () => {
                     new_password: newPassword
                 })
             });
-
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to update password');
             }
-
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
@@ -264,9 +253,7 @@ const AccountPage = () => {
                 },
                 body: JSON.stringify(formData)
             });
-
             if (!response.ok) throw new Error('Failed to update profile');
-
             setShowToast(true);
             setToastMessage('Profile updated successfully');
             setTimeout(() => setShowToast(false), 3000);
@@ -295,7 +282,6 @@ const AccountPage = () => {
                     </div>
                 </div>
             </div>
-
             <div className="max-w-7xl mx-auto px-4 py-6">
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-full md:w-64">
@@ -323,7 +309,6 @@ const AccountPage = () => {
                             </nav>
                         </div>
                     </div>
-
                     <div className="flex-1">
                         {activeTab === 'profile' && (
                             <div className="bg-white rounded-lg shadow p-14 mb-10">
@@ -343,7 +328,6 @@ const AccountPage = () => {
                             </div>
                         )}
                         {activeTab === 'payment' && <PaymentMethodsTab />}
-
                         {activeTab === 'security' && (
                             <div className="bg-white rounded-lg shadow p-10">
                                 <div className="flex justify-between items-center mb-6">
@@ -387,7 +371,6 @@ const AccountPage = () => {
                     </div>
                 </div>
             </div>
-
             {showToast && (
                 <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg">
                     {toastMessage}

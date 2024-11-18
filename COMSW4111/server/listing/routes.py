@@ -7,11 +7,30 @@ from datetime import datetime
 from COMSW4111.server.listing import bp
 from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
-from flask import render_template, request, jsonify, current_app
+from flask import render_template, request, jsonify, current_app, send_from_directory, abort
 from COMSW4111.data_models import db, Account, Seller, PRUser, Listing
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/listing_images'
+
+def allowed_file(filename):
+    """Check if the file has a valid extension."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_file(file):
+    """Handle file saving and return the URL or an error message."""
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        unique_filename = f"{filename}"
+        file_dir = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+        os.makedirs(file_dir, exist_ok=True)
+        print(file_dir)
+        file_path = os.path.join(file_dir, unique_filename)
+        file.save(file_path)
+        print(file_path)
+        return f"/{UPLOAD_FOLDER}/{unique_filename}"
+    return None
+
 
 @bp.route('/listing/<string:listing_id>', methods=['GET'])
 @login_required
@@ -42,9 +61,6 @@ def listing_page(listing_id):
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
     print(seller)
@@ -64,25 +80,21 @@ def ensure_seller_exists():
         print(seller)
     return seller
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('/api/listings/upload-images', methods=['POST'])
 @login_required
 def upload_images():
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
+
     file = request.files['images']
     if not file:
         return jsonify({'error': 'No selected file'}), 400
+
     try:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4()}_{filename}"
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-            file.save(file_path)
-            image_url = f"/static/listing_images/{unique_filename}"
+        image_url = save_file(file)
+        print(image_url)
+        if image_url:
             return jsonify({
                 'message': 'Image uploaded successfully',
                 'imageUrl': image_url
@@ -93,6 +105,28 @@ def upload_images():
         current_app.logger.error(f"Error uploading image: {str(e)}")
         return jsonify({'error': 'Failed to upload image'}), 500
 
+
+@bp.route('/api/get-images/<string:image_name>', methods=['GET'])
+def get_images(image_name):
+    try:
+        upload_path = "/Users/christopherwebb/Developer/COMSW4111/static/listing_images"
+        # Check if file exists
+        full_path = os.path.join(upload_path, image_name)
+        if not os.path.exists(full_path):
+            print(f"File not found: {full_path}")
+            return abort(404)
+
+        # Add mime type for better browser handling
+        return send_from_directory(
+            upload_path,
+            image_name,
+            mimetype='image/jpeg'
+        )
+
+    except Exception as e:
+        print(f"Error serving image: {str(e)}")
+        return abort(500)
+
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
 def create_listing():
@@ -101,20 +135,17 @@ def create_listing():
     print(data)
     try:
         seller = ensure_seller_exists()
-        # required_fields = ['title', 'price', 'description']
-        # for field in required_fields:
-        #     if not data.get(field):
-        #         return jsonify({'error': f'Missing required field: {field}'}), 400
         image_url = None
         if 'images' in request.files:
             file = request.files['images']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                unique_filename = f"{uuid.uuid4()}_{filename}"
+                unique_filename = f"{filename}"
                 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
                 file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(file_path)
                 image_url = f"/static/listing_images/{unique_filename}"
+                print(image_url)
         current_time = datetime.utcnow()
         new_listing = Listing(
             listing_id=str(uuid.uuid4()),
@@ -123,7 +154,7 @@ def create_listing():
             title=data['title'],
             description=data['description'],
             price=float(data['price']),
-            list_image=image_url,
+            list_image=unique_filename,
             location_id=data.get('location_id'),
             meta_tag=data.get('meta_tags', ''),
             t_created=current_time,
@@ -254,6 +285,9 @@ def search_listings():
             query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
         listings = query.all()
         print(listings)
+        print(listings[0].list_image)
+        for listing_item in listings:
+            print(listing_item.list_image)
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
@@ -281,7 +315,6 @@ def update_listing_status():
     try:
         listing = Listing.query.filter_by(listing_id=listing_id).first()
         if listing.seller_id != current_user.user_id:
-            print("unauthorized")
             return jsonify({'error': 'Unauthorized to update this listing'}), 403
         new_status = data['status']
         listing.status = new_status
@@ -294,7 +327,6 @@ def update_listing_status():
             't_last_edit': listing.t_last_edit.isoformat()
         }), 200
     except Exception as e:
-        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error updating listing status: {str(e)}")
         return jsonify({'error': 'Failed to update listing status'}), 500
