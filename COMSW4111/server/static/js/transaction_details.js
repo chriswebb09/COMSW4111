@@ -81,7 +81,6 @@ const TransactionDetail = ({ transactionId }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto py-8 px-4">
-        {/* Header */}
         <div className="bg-white shadow rounded-lg mb-6">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -89,7 +88,6 @@ const TransactionDetail = ({ transactionId }) => {
               <div className="text-sm text-gray-500">#{transaction.transaction_id}</div>
             </div>
           </div>
-          {/* Status Update Section */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -107,7 +105,6 @@ const TransactionDetail = ({ transactionId }) => {
               </button>
             </div>
           </div>
-          {/* Transaction Information */}
           <div className="px-6 py-4 grid grid-cols-2 gap-4">
             <div>
               <h2 className="text-sm font-medium text-gray-500 mb-3">Transaction Information</h2>
@@ -140,7 +137,6 @@ const TransactionDetail = ({ transactionId }) => {
               </div>
             </div>
           </div>
-          {/* Transaction Details */}
           <div className="px-6 py-4 border-t border-gray-200">
             <h2 className="text-sm font-medium text-gray-500 mb-3">Transaction Details</h2>
             <div className="space-y-3">
@@ -158,7 +154,6 @@ const TransactionDetail = ({ transactionId }) => {
               </div>
             </div>
           </div>
-          {/* Notes Section */}
           {transaction.notes && (
             <div className="px-6 py-4 border-t border-gray-200">
               <h2 className="text-sm font-medium text-gray-500 mb-2">Notes</h2>
@@ -166,7 +161,6 @@ const TransactionDetail = ({ transactionId }) => {
             </div>
           )}
         </div>
-        {/* Back Button */}
         <button onClick={() => window.history.back()} className="text-sm text-gray-500 hover:text-gray-700 flex items-center">
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
