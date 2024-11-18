@@ -36,17 +36,20 @@ const ListingPage  = (reportDataElems) => {
             <div className="lg:col-span-2">
               {/* Main Image */}
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                <img src="../static/img/placeholder.png" alt={listing.title} className="w-full h-96 object-cover"/>
+                <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title} className="w-full h-96 object-cover"/>
                 {/* Thumbnail Gallery */}
                 <div className="p-4 grid grid-cols-4 gap-2">
-                  <img
-                      src="../static/img/placeholder.png"
-                      alt="Main view"
-                      onClick={() => setSelectedImage("../static/img/placeholder.png")}
-                      className={`w-5/6 h-24 object-cover rounded cursor-pointer ${
-                          selectedImage === listingData.list_image ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                  />
+                  <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title}
+                       className="w-full h-40 object-cover"/>
+
+                  {/*<img*/}
+                  {/*    src="../static/img/placeholder.png"*/}
+                  {/*    alt="Main view"*/}
+                  {/*    onClick={() => setSelectedImage("../static/img/placeholder.png")}*/}
+                  {/*    className={`w-5/6 h-24 object-cover rounded cursor-pointer ${*/}
+                  {/*        selectedImage === listingData.list_image ? 'ring-2 ring-blue-500' : ''*/}
+                  {/*    }`}*/}
+                  {/*/>*/}
                   {/*{listingData.additionalImages.map((img, index) => (*/}
                   {/*  <img*/}
                   {/*    key={index}*/}

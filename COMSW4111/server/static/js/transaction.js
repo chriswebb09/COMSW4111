@@ -34,11 +34,9 @@ const TransactionPage = (passedListingId) => {
     loadDataOnlyOnce(passedListingId.passedListingId);
   }, [passedListingId]);
 
-
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const calculateServiceFee = (price) => (parseFloat(price) * 0.05).toFixed(2);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setTransaction(prevState => {

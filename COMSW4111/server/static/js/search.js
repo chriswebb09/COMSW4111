@@ -80,15 +80,10 @@ const ListingsPage = () => {
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cxols-2 lg:grid-cols-4 gap-6">
           {filteredListings.map(listing => (
-              <div key={listing.listing_id}
-                   className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
-                <img
-                    src={`/static/${listing.listing_image}`}
-                    alt={listing.title}
-                    className="w-full h-40 object-cover"
-                />
+              <div key={listing.listing_id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-200 hover:scale-105">
+                <img src={`/api/get-images/${listing.list_image}`} alt={listing.title} className="w-full h-40 object-cover"/>
                 <div className="p-4">
                   <h2 className="text-xl font-semibold text-gray-900 mb-1">{listing.title}</h2>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>
@@ -101,17 +96,15 @@ const ListingsPage = () => {
                     {listing.meta_tag && (
                         <div className="flex flex-wrap gap-2">
                           {listing.meta_tag.split(',').map((tag, index) => (
-                              <span key={index}
-                                    className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
-                          {tag.trim().replace(/[\[\]"]/g, '')}
-                        </span>
+                              <span key={index} className="bg-blue-50 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                                {tag.trim().replace(/[\[\]"]/g, '')}
+                              </span>
                           ))}
                         </div>
                     )}
                   </div>
                   <a href={`listing/${listing.listing_id}`} className="w-full">
-                    <button
-                        className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                    <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
                       View Details
                     </button>
                   </a>

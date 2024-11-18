@@ -7,7 +7,7 @@ from datetime import datetime
 from COMSW4111.server.listing import bp
 from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
-from flask import render_template, request, jsonify, current_app
+from flask import render_template, request, jsonify, current_app, send_from_directory, abort
 from COMSW4111.data_models import db, Account, Seller, PRUser, Listing
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -17,28 +17,18 @@ def allowed_file(filename):
     """Check if the file has a valid extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# def save_file(file):
-#     """Handle file saving and return the URL."""
-#     if file and allowed_file(file.filename):
-#         filename = secure_filename(file.filename)
-#         unique_filename = f"{uuid.uuid4()}_{filename}"
-#         file_dir = os.path.join(current_app.root_path, UPLOAD_FOLDER)
-#         os.makedirs(file_dir, exist_ok=True)
-#         file_path = os.path.join(file_dir, unique_filename)
-#         file.save(file_path)
-#         # Generate the URL for the saved image
-#         return f"/static/listing_images/{unique_filename}"
-#     return None
-
 def save_file(file):
-    """Handle file saving and return the URL."""
+    """Handle file saving and return the URL or an error message."""
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        unique_filename = f"{uuid.uuid4()}_{filename}"
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-        os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
+        unique_filename = f"{filename}"
+        file_dir = os.path.join(current_app.root_path, UPLOAD_FOLDER)
+        os.makedirs(file_dir, exist_ok=True)
+        print(file_dir)
+        file_path = os.path.join(file_dir, unique_filename)
         file.save(file_path)
-        return f"/static/listing_images/{unique_filename}"
+        print(file_path)
+        return f"/{UPLOAD_FOLDER}/{unique_filename}"
     return None
 
 
@@ -70,9 +60,6 @@ def listing_page(listing_id):
         "location_id": str(listing.location_id)
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)
-#
-# def allowed_file(filename):
-#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
@@ -106,6 +93,7 @@ def upload_images():
 
     try:
         image_url = save_file(file)
+        print(image_url)
         if image_url:
             return jsonify({
                 'message': 'Image uploaded successfully',
@@ -117,49 +105,27 @@ def upload_images():
         current_app.logger.error(f"Error uploading image: {str(e)}")
         return jsonify({'error': 'Failed to upload image'}), 500
 
-from flask import send_from_directory, current_app
 
-@bp.route('/static/listing_images/<filename>')
-def serve_file(filename):
-    directory = os.path.join(app.root_path, 'static/listing_images')
-    return send_from_directory(directory, filename)
+@bp.route('/api/get-images/<string:image_name>', methods=['GET'])
+def get_images(image_name):
+    try:
+        upload_path = "/Users/christopherwebb/Developer/COMSW4111/static/listing_images"
+        # Check if file exists
+        full_path = os.path.join(upload_path, image_name)
+        if not os.path.exists(full_path):
+            print(f"File not found: {full_path}")
+            return abort(404)
 
-# def allowed_file(filename):
-#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        # Add mime type for better browser handling
+        return send_from_directory(
+            upload_path,
+            image_name,
+            mimetype='image/jpeg'
+        )
 
-# @bp.route('/api/listings/upload-images', methods=['POST'])
-# @login_required
-# def upload_images():
-#     if 'images' not in request.files:
-#         return jsonify({'error': 'No images provided'}), 400
-#     file = request.files['images']
-#     if not file:
-#         return jsonify({'error': 'No selected file'}), 400
-#     try:
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             unique_filename = f"{uuid.uuid4()}_{filename}"
-#             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-#             file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-#             file.save(file_path)
-#             image_url = f"/static/listing_images/{unique_filename}"
-#             return jsonify({
-#                 'message': 'Image uploaded successfully',
-#                 'imageUrl': image_url
-#             }), 200
-#         else:
-#             return jsonify({'error': 'Invalid file type'}), 400
-#     except Exception as e:
-#         current_app.logger.error(f"Error uploading image: {str(e)}")
-#         return jsonify({'error': 'Failed to upload image'}), 500
-
-from flask import send_from_directory, current_app
-
-@bp.route('/static/listing_images/<path:filename>')
-def serve_image(filename):
-    """Serve images from the upload folder."""
-    directory = os.path.join(current_app.root_path, UPLOAD_FOLDER)
-    return send_from_directory(directory, filename)
+    except Exception as e:
+        print(f"Error serving image: {str(e)}")
+        return abort(500)
 
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
@@ -169,20 +135,17 @@ def create_listing():
     print(data)
     try:
         seller = ensure_seller_exists()
-        # required_fields = ['title', 'price', 'description']
-        # for field in required_fields:
-        #     if not data.get(field):
-        #         return jsonify({'error': f'Missing required field: {field}'}), 400
         image_url = None
         if 'images' in request.files:
             file = request.files['images']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                unique_filename = f"{uuid.uuid4()}_{filename}"
+                unique_filename = f"{filename}"
                 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
                 file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(file_path)
                 image_url = f"/static/listing_images/{unique_filename}"
+                print(image_url)
         current_time = datetime.utcnow()
         new_listing = Listing(
             listing_id=str(uuid.uuid4()),
@@ -191,7 +154,7 @@ def create_listing():
             title=data['title'],
             description=data['description'],
             price=float(data['price']),
-            list_image=image_url,
+            list_image=unique_filename,
             location_id=data.get('location_id'),
             meta_tag=data.get('meta_tags', ''),
             t_created=current_time,
@@ -322,6 +285,9 @@ def search_listings():
             query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
         listings = query.all()
         print(listings)
+        print(listings[0].list_image)
+        for listing_item in listings:
+            print(listing_item.list_image)
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,

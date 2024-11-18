@@ -144,6 +144,7 @@ const CreateListingPage = () => {
                     window.location.href = `/listing/${dataResponse.listing_id}`;
                 });
             });
+            x
 
             if (!response.ok) {
                 const errorData = await response.json().catch(e => null);
