@@ -299,7 +299,7 @@ def search_listings():
             'location_id': listing.location_id,
             'meta_tag': listing.meta_tag,
             't_created': listing.t_created.isoformat(),
-            't_last_edit': listing.t_last_edit.utcnow().isoformat()
+            't_last_edit': listing.t_last_edit.isoformat()
         } for listing in listings]
         return jsonify(results), 200
     except Exception as e:
