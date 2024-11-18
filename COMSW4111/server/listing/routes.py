@@ -298,7 +298,7 @@ def search_listings():
             'list_image': listing.list_image,
             'location_id': listing.location_id,
             'meta_tag': listing.meta_tag,
-            't_created': listing.t_created.utcnow().isoformat(),
+            't_created': listing.t_created.isoformat(),
             't_last_edit': listing.t_last_edit.utcnow().isoformat()
         } for listing in listings]
         return jsonify(results), 200
