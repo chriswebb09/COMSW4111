@@ -24,10 +24,8 @@ def save_file(file):
         unique_filename = f"{filename}"
         file_dir = os.path.join(current_app.root_path, UPLOAD_FOLDER)
         os.makedirs(file_dir, exist_ok=True)
-        print(file_dir)
         file_path = os.path.join(file_dir, unique_filename)
         file.save(file_path)
-        print(file_path)
         return f"/{UPLOAD_FOLDER}/{unique_filename}"
     return None
 
@@ -63,7 +61,6 @@ def listing_page(listing_id):
 
 def ensure_seller_exists():
     seller = Seller.query.get(current_user.user_id)
-    print(seller)
     if not seller:
         account = Account.query.filter_by(user_id=current_user.user_id).first()
         if not account:
@@ -77,7 +74,6 @@ def ensure_seller_exists():
         seller = Seller(seller_id=current_user.user_id, account_id=account.account_id)
         db.session.add(seller)
         db.session.commit()
-        print(seller)
     return seller
 
 
@@ -86,14 +82,11 @@ def ensure_seller_exists():
 def upload_images():
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
-
     file = request.files['images']
     if not file:
         return jsonify({'error': 'No selected file'}), 400
-
     try:
         image_url = save_file(file)
-        print(image_url)
         if image_url:
             return jsonify({
                 'message': 'Image uploaded successfully',
@@ -115,14 +108,12 @@ def get_images(image_name):
         if not os.path.exists(full_path):
             print(f"File not found: {full_path}")
             return abort(404)
-
         # Add mime type for better browser handling
         return send_from_directory(
             upload_path,
             image_name,
             mimetype='image/jpeg'
         )
-
     except Exception as e:
         print(f"Error serving image: {str(e)}")
         return abort(500)
@@ -130,9 +121,7 @@ def get_images(image_name):
 @bp.route('/api/listings/create', methods=['POST'])
 @login_required
 def create_listing():
-    print("HERE")
     data = request.form
-    print(data)
     try:
         seller = ensure_seller_exists()
         image_url = None
@@ -160,30 +149,21 @@ def create_listing():
             t_created=current_time,
             t_last_edit=current_time
         )
-        print(new_listing)
         db.session.add(new_listing)
         db.session.commit()
-        print(new_listing)
-        print(new_listing.listing_id)
-        print(new_listing.title)
-        print(new_listing.t_last_edit)
-        print(new_listing.t_created)
         return jsonify({
             'message': 'Listing created successfully',
             'listing_id': new_listing.listing_id
         }), 201
     except ValueError as ve:
-        print(ve)
         db.session.rollback()
         current_app.logger.error(f"Validation error: {str(ve)}")
         return jsonify({'error': str(ve)}), 400
     except exc.IntegrityError as e:
-        print()
         db.session.rollback()
         current_app.logger.error(f"Database integrity error: {str(e)}")
         return jsonify({'error': 'Database integrity error'}), 400
     except Exception as e:
-        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error creating listing: {str(e)}")
         return jsonify({'error': 'Failed to create listing'}), 500
@@ -284,10 +264,6 @@ def search_listings():
         if meta_tag:
             query = query.filter(Listing.meta_tag.ilike(f'%{meta_tag}%'))
         listings = query.all()
-        print(listings)
-        print(listings[0].list_image)
-        for listing_item in listings:
-            print(listing_item.list_image)
         results = [{
             'listing_id': listing.listing_id,
             'seller_id': listing.seller_id,
@@ -311,7 +287,6 @@ def search_listings():
 def update_listing_status():
     data = request.get_json()
     listing_id = data['listing_id']
-    print(data)
     try:
         listing = Listing.query.filter_by(listing_id=listing_id).first()
         if listing.seller_id != current_user.user_id:
