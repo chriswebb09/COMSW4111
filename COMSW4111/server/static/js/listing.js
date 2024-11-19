@@ -51,20 +51,17 @@ const ListingPage  = (reportDataElems) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title}
-                     className="w-full h-96 object-cover"/>
+                <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title} className="w-full h-96 object-cover"/>
                 <div className="p-4 grid grid-cols-4 gap-2">
-                  <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title}
-                       className="w-full h-40 object-cover"/>
+                  <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title} className="w-full h-40 object-cover"/>
                 </div>
               </div>
               <div className="bg-white rounded-lg shadow-lg overflow-hidden my-6">
                 {(listingData.status == "active" && listingData.your_listing == false) && (
                     <div className="m-6">
                       <a href={`/transaction?listing_id=${listingData.listing_id}`}>
-                        <button
-                            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
-                          Start Transaction
+                        <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
+                          Make an Offer
                         </button>
                       </a>
                     </div>
