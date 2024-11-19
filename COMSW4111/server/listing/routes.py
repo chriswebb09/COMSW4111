@@ -55,7 +55,8 @@ def listing_page(listing_id):
         "seller_name": f"{seller.first_name} {seller.last_name}",
         "seller_email": seller.email,
         "t_last_edit": listing.t_last_edit,
-        "location_id": str(listing.location_id)
+        "location_id": str(listing.location_id),
+        'your_listing': listing.seller_id == current_user.user_id
     }
     return render_template('listing.html', title='Listing', listing_data=list_data)
 
@@ -173,6 +174,7 @@ def create_listing():
 def get_listing(listing_id):
     try:
         listing = Listing.query.get(listing_id)
+        print(listing.seller_id == current_user.user_id)
         if not listing:
             return jsonify({'error': 'Listing not found'}), 404
         return jsonify({
@@ -186,7 +188,8 @@ def get_listing(listing_id):
             'location_id': listing.location_id,
             'meta_tag': listing.meta_tag,
             't_created': listing.t_created.utcnow().isoformat(),
-            't_last_edit': listing.t_last_edit.utcnow().isoformat()
+            't_last_edit': listing.t_last_edit.utcnow().isoformat(),
+            'your_listing': listing.seller_id == current_user.user_id
         }), 200
     except Exception as e:
         current_app.logger.error(f"Error fetching listing: {str(e)}")

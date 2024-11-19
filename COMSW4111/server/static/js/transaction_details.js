@@ -115,7 +115,7 @@ const TransactionDetail = ({ transactionId }) => {
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Amount</div>
-                  <div className="text-sm text-gray-900">${transaction.amount}</div>
+                  <div className="text-sm text-gray-900">${transaction.total_amount}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Payment Method</div>
@@ -128,11 +128,11 @@ const TransactionDetail = ({ transactionId }) => {
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-gray-500">Name</div>
-                  <div className="text-sm text-gray-900">{transaction.customer_name}</div>
+                  <div className="text-sm text-gray-900">{transaction.buyer_name}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Email</div>
-                  <div className="text-sm text-gray-900">{transaction.customer_email}</div>
+                  <div className="text-sm text-gray-900">{transaction.buyer_email}</div>
                 </div>
               </div>
             </div>
@@ -142,7 +142,7 @@ const TransactionDetail = ({ transactionId }) => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <div className="text-sm text-gray-500">Subtotal</div>
-                <div className="text-sm text-gray-900">${transaction.subtotal}</div>
+                <div className="text-sm text-gray-900">${transaction.agreed_price}</div>
               </div>
               <div className="flex justify-between">
                 <div className="text-sm text-gray-500">Service Fee</div>
@@ -150,7 +150,7 @@ const TransactionDetail = ({ transactionId }) => {
               </div>
               <div className="flex justify-between pt-3 border-t border-gray-200">
                 <div className="text-sm font-medium text-gray-900">Total</div>
-                <div className="text-sm font-medium text-gray-900">${transaction.total}</div>
+                <div className="text-sm font-medium text-gray-900">${transaction.total_amount}</div>
               </div>
             </div>
           </div>

@@ -512,10 +512,13 @@ def get_transaction_detail(transaction_id):
             .first()
         if not transaction:
             return jsonify({'error': 'Transaction not found'}), 404
-        buyer_account = Account.query.filter_by(account_id=transaction.pr_buyer.account_id).first()
-        seller_account = Account.query.filter_by(account_id=transaction.pr_seller.account_id).first()
-        print(buyer_account.account_id)
-        print(seller_account.account_id)
+        buyer_account = Account.query.filter_by(user_id=transaction.buyer_id).first()
+        seller_account = Account.query.filter_by(user_id=transaction.seller_id).first()
+        print(buyer_account.user_id)
+        print(seller_account.user_id)
+        print(transaction.agreed_price)
+        buyer_user = PRUser.query.get(buyer_account.user_id)
+        seller_user = PRUser.query.get(seller_account.user_id)
         transaction_data = {
             'transaction_id': transaction.transaction_id,
             'date': transaction.t_date.strftime('%Y-%m-%d'),
@@ -524,6 +527,10 @@ def get_transaction_detail(transaction_id):
             'total_amount': float(transaction.agreed_price) + float(transaction.serv_fee),
             'status': transaction.status,
             'listing_id': transaction.listing_id,
+            'buyer_name': buyer_user.first_name + ' ' + buyer_user.last_name,
+            'buyer_email': buyer_user.email,
+            'seller_name': seller_user.first_name + ' ' + seller_user.last_name,
+            'seller_email': seller_user.email,
             'buyer': {
                 'buyer_id': transaction.buyer_id,
                 'account_id': buyer_account.account_id,
@@ -570,6 +577,8 @@ def create_account(account_type, account_details):
         db.session.add(new_details)
         db.session.commit()
         session['anonymous_user_id'] = current_user.user_id
+
+
 
 def mask_sensitive_data(data, last_n=4):
     if not data:
