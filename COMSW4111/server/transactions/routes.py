@@ -27,21 +27,19 @@ def transaction_list():
 def post_new_transaction():
     data = request.get_json()
     print(data)
+    error_description = ""
     try:
         listing = Listing.query.filter_by(listing_id=data['listing_id']).first()
         account = Account.query.filter_by(user_id=current_user.user_id).first()
         transaction_user = PRUser.query.get(current_user.user_id)
-
         transactions = Transaction.query.filter(and_(Transaction.listing_id == data['listing_id'], Transaction.buyer_id == current_user.user_id)).all()
-
         if transactions:
-            print("transaction already exists")
-            return jsonify({"error": "Transactions already exist"}), 404
+            error_description = "transaction already exists"
+            return jsonify({"error": f"Transactions already exist {error_description}"}), 500
         print(listing)
         if listing.seller_id == current_user.user_id:
-            print("cannot buy own listing")
-            return jsonify({"error": "Cannot buy your own listing"}), 404
-
+            error_description = "cannot buy own listing"
+            return jsonify({"error": f"Cannot buy your own listing {error_description}"}), 500
         if account is None:
             account = Account(
                 account_id=str(uuid.uuid4()),
@@ -50,13 +48,10 @@ def post_new_transaction():
             )
             db.session.add(account)
             db.session.commit()
-
         buyer = Buyer.query.get(current_user.user_id)
-
         if buyer is None:
             buyer = Buyer(buyer_id=current_user.user_id, account_id=account.account_id)
             db.session.add(buyer)
-
         new_transaction = Transaction(
             transaction_id=str(uuid.uuid4()),
             buyer_id=buyer.buyer_id,
@@ -70,7 +65,6 @@ def post_new_transaction():
         listing.status = 'pending'
         db.session.add(new_transaction)
         db.session.commit()
-
         return jsonify({
             'transaction_id': new_transaction.transaction_id,
             'buyer_id': new_transaction.buyer_id,
@@ -81,7 +75,6 @@ def post_new_transaction():
             'serv_fee': float(new_transaction.serv_fee),
             'status': new_transaction.status
         })
-
     except exc.SQLAlchemyError as e:
         print(e)
         db.session.rollback()
@@ -89,8 +82,8 @@ def post_new_transaction():
         return jsonify({"error": "Database error occurred"}), 500
     except Exception as e:
         print(e)
-        current_app.logger.error(f"Error creating transaction: {str(e)}")
-        return jsonify({"error": "Failed to create transaction"}), 500
+        current_app.logger.error(f"Error creating transaction: {str(e)} {error_description}")
+        return jsonify({"error": f"Failed to create transaction - {str(e)} {error_description}"}), 500
 
 
 @bp.route('/api/transactions', methods=['GET'])
@@ -100,10 +93,8 @@ def get_transactions():
         buyer_id = request.args.get('buyer_id')
         seller_id = request.args.get('seller_id')
         status = request.args.get('status')
-
         # Start with base query
         query = Transaction.query
-
         # Apply filters if provided
         if buyer_id:
             query = query.filter(Transaction.buyer_id == buyer_id)
@@ -111,28 +102,25 @@ def get_transactions():
             query = query.filter(Transaction.seller_id == seller_id)
         if status:
             query = query.filter(Transaction.status == status)
-
         # Order by date descending by default
         query = query.order_by(desc(Transaction.t_date))
-
         # Execute query and get results
         transactions = query.all()
-
         # Convert to list of dictionaries
         transactions_list = [{
-            'transaction_id': t.transaction_id,
-            'buyer_id': t.buyer_id,
-            'seller_id': t.seller_id,
-            'listing_id': t.listing_id,
-            't_date': t.t_date.isoformat() if t.t_date else None,
-            'agreed_price': str(t.agreed_price),  # Convert Decimal to string
-            'serv_fee': str(t.serv_fee) if t.serv_fee else None,  # Handle nullable field
-            'status': t.status
-        } for t in transactions]
-
+            'transaction_id': transaction.transaction_id,
+            'buyer_id': transaction.buyer_id,
+            'seller_id': transaction.seller_id,
+            'listing_id': transaction.listing_id,
+            't_date': transaction.t_date.isoformat() if transaction.t_date else None,
+            'agreed_price': str(transaction.agreed_price),  # Convert Decimal to string
+            'serv_fee': str(transaction.serv_fee) if transaction.serv_fee else None,  # Handle nullable field
+            'status': transaction.status
+        } for transaction in transactions]
         return jsonify(transactions_list)
 
     except Exception as e:
+        print(e)
         # Log the error here if you have logging configured
         return jsonify({
             'error': 'Failed to fetch transactions',
@@ -166,10 +154,8 @@ def update_transaction_status(transaction_id):
     data = request.json
     new_status = data.get('status')
     transaction = Transaction.query.get(transaction_id)
-
     if not transaction:
         return jsonify({"error": "Transaction not found"}), 404
-
     transaction.status = new_status
     db.session.commit()
     return jsonify({"message": "Transaction status updated", "transaction_id": transaction.transaction_id})
