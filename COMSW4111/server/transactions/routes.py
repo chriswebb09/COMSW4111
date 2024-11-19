@@ -35,11 +35,11 @@ def post_new_transaction():
         transactions = Transaction.query.filter(and_(Transaction.listing_id == data['listing_id'], Transaction.buyer_id == current_user.user_id)).all()
         if transactions:
             error_description = "transaction already exists"
-            return jsonify({"error": f"Transactions already exist {error_description}"}), 500
+            return jsonify({"error": f"Transactions already exist"}), 500
         print(listing)
         if listing.seller_id == current_user.user_id:
             error_description = "cannot buy own listing"
-            return jsonify({"error": f"Cannot buy your own listing {error_description}"}), 500
+            return jsonify({"error": f"Cannot buy your own listing"}), 500
         if account is None:
             account = Account(
                 account_id=str(uuid.uuid4()),
@@ -89,24 +89,18 @@ def post_new_transaction():
 @bp.route('/api/transactions', methods=['GET'])
 def get_transactions():
     try:
-        # Get query parameters for filtering
         buyer_id = request.args.get('buyer_id')
         seller_id = request.args.get('seller_id')
         status = request.args.get('status')
-        # Start with base query
         query = Transaction.query
-        # Apply filters if provided
         if buyer_id:
             query = query.filter(Transaction.buyer_id == buyer_id)
         if seller_id:
             query = query.filter(Transaction.seller_id == seller_id)
         if status:
             query = query.filter(Transaction.status == status)
-        # Order by date descending by default
         query = query.order_by(desc(Transaction.t_date))
-        # Execute query and get results
         transactions = query.all()
-        # Convert to list of dictionaries
         transactions_list = [{
             'transaction_id': transaction.transaction_id,
             'buyer_id': transaction.buyer_id,
@@ -118,10 +112,8 @@ def get_transactions():
             'status': transaction.status
         } for transaction in transactions]
         return jsonify(transactions_list)
-
     except Exception as e:
         print(e)
-        # Log the error here if you have logging configured
         return jsonify({
             'error': 'Failed to fetch transactions',
             'message': str(e)

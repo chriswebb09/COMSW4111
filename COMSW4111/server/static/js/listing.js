@@ -126,9 +126,12 @@ const ListingPage  = (reportDataElems) => {
                       className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
                     Save to Favorites
                   </button>
-                  <button onClick={() => handleDelete(true)} className="px-4 py-2 w-full bg-red-600 text-white rounded-lg">
-                    Delete Listing
-                  </button>
+                  { listingData.your_listing && (
+                    <button onClick={() => setShowDeleteConfirm(true)}
+                            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200 font-medium">
+                      Delete Listing
+                    </button>
+                  )}
                 </div>
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-500">
