@@ -108,26 +108,25 @@ const TransactionListingPage = () => {
             </thead>
             <tbody>
             {transactions.map((transaction) => (
-                <a href={`/account/transaction/${transaction.transaction_id}`} >
-                  <tr key={transaction.transaction_id} className="border-t hover:bg-gray-50">
-                    <td className="p-3">{transaction.transaction_id}</td>
-                    <td className="p-3">{new Date(transaction.t_date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}</td>
-                    <td className="p-3">{transaction.buyer_id}</td>
-                    <td className="p-3">{transaction.seller_id}</td>
-                    <td className="p-3">{transaction.listing_id}</td>
-                    <td className="p-3">{formatCurrency(transaction.agreed_price)}</td>
-                    <td className="p-3">{formatCurrency(transaction.serv_fee)}</td>
-                    <td className="p-3">
-                  <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(transaction.status)}`}>
-                    {transaction.status}
-                  </span>
-                    </td>
-                  </tr>
-                </a>
+                <tr key={transaction.transaction_id} className="border-t hover:bg-gray-50 cursor-pointer"
+                    onClick={() => window.location.href = `/account/transaction/${transaction.transaction_id}`}>
+                  <td className="p-3">{transaction.transaction_id}</td>
+                  <td className="p-3">{new Date(transaction.t_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}</td>
+                  <td className="p-3">{transaction.buyer_id}</td>
+                  <td className="p-3">{transaction.seller_id}</td>
+                  <td className="p-3">{transaction.listing_id}</td>
+                  <td className="p-3">{formatCurrency(transaction.agreed_price)}</td>
+                  <td className="p-3">{formatCurrency(transaction.serv_fee)}</td>
+                  <td className="p-3">
+                    <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(transaction.status)}`}>
+                      {transaction.status}
+                    </span>
+                  </td>
+                </tr>
             ))}
             </tbody>
           </table>

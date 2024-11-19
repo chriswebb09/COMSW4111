@@ -250,35 +250,6 @@ def get_accounts():
     accounts = get_user_accounts(current_user.user_id)
     return jsonify({'accounts': accounts}), 200
 
-# WITH bank_details AS (
-#     SELECT
-#         account_id,
-#         bank_acc_num,
-#         routing_num
-#     FROM BankAccount
-# ),
-# credit_details AS (
-#     SELECT
-#         account_id,
-#         cc_num,
-#         exp_date
-#     FROM CreditCard
-# )
-# SELECT
-#     a.account_id,
-#     a.account_type,
-#     a.billing_address,
-#     bd.bank_acc_num,
-#     bd.routing_num,
-#     cd.cc_num,
-#     cd.exp_date
-# FROM Account a
-# LEFT OUTER JOIN bank_details bd
-#     ON a.account_id = bd.account_id AND a.account_type = 'bank_account'
-# LEFT OUTER JOIN credit_details cd
-#     ON a.account_id = cd.account_id AND a.account_type = 'credit_card'
-# WHERE a.user_id = :user_id;
-
 def get_user_accounts(user_id):
     bank_details = BankAccount.query.with_entities(
         BankAccount.account_id, BankAccount.bank_acc_num, BankAccount.routing_num
@@ -306,7 +277,7 @@ def get_user_accounts(user_id):
         elif account.account_type == 'credit_card' and account.cc_num:
             details = {
                 'cc_num': mask_sensitive_data(account.cc_num),
-                'exp_date': (account.exp_date or datetime.utcnow()).strftime('%m/%Y')
+                'exp_date': (account.exp_date).strftime('%m/%Y')
             }
         accounts_data.append(
             {
@@ -317,37 +288,6 @@ def get_user_accounts(user_id):
             }
         )
     return accounts_data
-
-# SELECT
-#     t.*,
-#     l.title AS listing_title,
-#     l.list_image AS listing_image
-# FROM Transaction t
-# JOIN Listing l ON t.listing_id = l.listing_id
-# WHERE t.seller_id = :seller_id
-# ORDER BY t.t_date DESC;
-
-
-# SELECT
-#     COUNT(t.transaction_id) AS total_transactions,
-#     SUM(t.agreed_price) AS total_sales,
-#     SUM(t.serv_fee) AS total_fees
-# FROM Transaction t
-# WHERE t.seller_id = :seller_id
-#   AND t.status = 'completed';
-
-# SELECT
-#     l.listing_id,
-#     l.title,
-#     COUNT(t.transaction_id) AS sale_count,
-#     SUM(t.agreed_price) AS total_amount
-# FROM Listing l
-# JOIN Transaction t ON l.listing_id = t.listing_id
-# WHERE t.seller_id = :seller_id
-#   AND t.status = 'completed'
-# GROUP BY
-#     l.listing_id,
-#     l.title;
 
 @bp.route('/api/account/seller_list', methods=['GET'])
 @login_required
@@ -426,6 +366,7 @@ def get_seller_list():
         transaction_data['status_summary'] = status_counts
         return jsonify(transaction_data)
     except Exception as e:
+        print(error)
         current_app.logger.error(f"Error in get_seller_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch seller transactions"}), 500
 
@@ -573,6 +514,8 @@ def get_transaction_detail(transaction_id):
             return jsonify({'error': 'Transaction not found'}), 404
         buyer_account = Account.query.filter_by(account_id=transaction.pr_buyer.account_id).first()
         seller_account = Account.query.filter_by(account_id=transaction.pr_seller.account_id).first()
+        print(buyer_account.account_id)
+        print(seller_account.account_id)
         transaction_data = {
             'transaction_id': transaction.transaction_id,
             'date': transaction.t_date.strftime('%Y-%m-%d'),
@@ -594,6 +537,7 @@ def get_transaction_detail(transaction_id):
         }
         return jsonify(transaction_data), 200
     except Exception as e:
+        print(e)
         return jsonify({
             'error': 'Internal server error',
             'message': str(e)
@@ -601,6 +545,7 @@ def get_transaction_detail(transaction_id):
 
 def create_account(account_type, account_details):
     new_details = None
+    print(account_details)
     new_account = Account(
         account_id=str(uuid.uuid4()),
         user_id=current_user.user_id,
@@ -613,7 +558,7 @@ def create_account(account_type, account_details):
         new_details = CreditCard(
             account_id=new_account.account_id,
             cc_num=account_details['cc_num'],
-            exp_date=datetime.utcnow().strptime(account_details['exp_date'], '%Y-%m-%d').date()
+            exp_date=datetime.strptime(account_details['exp_date'], '%Y-%m-%d').date()
         )
     elif account_type == 'bank_account':
         new_details = BankAccount(
