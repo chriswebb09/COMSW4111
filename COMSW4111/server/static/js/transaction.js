@@ -77,9 +77,11 @@ const TransactionPage = (passedListingId) => {
           const errorData = await response.json();
           const errorMessage = errorData.message || "Unknown error occurred";
           throw new Error(`Error: ${response.status} - ${errorMessage}`);
+        } else {
+          setTransaction(transactionResult);
+          setSuccess(true);
+          window.location.href = `/listing/${transaction.listing_id}`;
         }
-        setTransaction(transactionResult);
-        setSuccess(true);
       } else {
         const errorData = await response.json();
         if (!errorData) {
