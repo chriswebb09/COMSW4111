@@ -102,7 +102,7 @@ def get_transactions():
         transactions = query.all()
         filtered_transactions = [
             transaction for transaction in transactions
-            if transaction.buyer_id == current_user.user_id or transaction.seller_id == current_user.user_id
+            if transaction.seller_id == current_user.user_id
         ]
         transactions_list = [{
             'transaction_id': transaction.transaction_id,

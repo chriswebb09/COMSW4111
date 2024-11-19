@@ -239,6 +239,7 @@ def delete_account():
         db.session.commit()
         return jsonify({'message': 'Account deactivated successfully'}), 200
     except Exception as e:
+        print(e)
         db.session.rollback()
         current_app.logger.error(f"Error deactivating account: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
@@ -295,6 +296,7 @@ def get_seller_list():
     try:
         seller = current_user.seller
         if not seller:
+            print("User is not a seller")
             return jsonify({"error": "User is not a seller"}), 403
         transactions = db.session.query(
             Transaction,
@@ -366,7 +368,7 @@ def get_seller_list():
         transaction_data['status_summary'] = status_counts
         return jsonify(transaction_data)
     except Exception as e:
-        print(error)
+        print(e)
         current_app.logger.error(f"Error in get_seller_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch seller transactions"}), 500
 
@@ -376,6 +378,7 @@ def get_buyer_transactions():
     try:
         buyer = current_user.buyer
         if not buyer:
+            print("User is not a buyer")
             return jsonify({"error": "User is not a buyer"}), 403
         transactions = db.session.query(
             Transaction,
@@ -426,6 +429,7 @@ def get_buyer_transactions():
         transaction_data['status_summary'] = status_counts
         return jsonify(transaction_data)
     except Exception as e:
+        print(e)
         current_app.logger.error(f"Error in get_buyer_transactions: {str(e)}")
         return jsonify({"error": "Failed to fetch buyer transactions"}), 500
 
@@ -436,12 +440,15 @@ def update_account_transaction():
         data = request.get_json()
         required_fields = ['transaction_id', 'status']
         if not all(field in data for field in required_fields):
+            print('Missing required fields')
             return jsonify({
                 'error': 'Missing required fields',
                 'required': required_fields
             }), 400
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if data['status'] not in valid_statuses:
+            print("Invalid status value")
+            print(data['status'])
             return jsonify({
                 'error': 'Invalid status value',
                 'valid_statuses': valid_statuses
@@ -453,6 +460,7 @@ def update_account_transaction():
             'updated_at': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
+        print(e)
         return jsonify({
             'error': 'Internal server error',
             'message': str(e)
@@ -463,11 +471,11 @@ def update_account_transaction():
 def update_transaction_status():
     data = request.get_json()
     try:
-
         new_status = data['status']
-
         valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'refunded']
         if new_status not in valid_statuses:
+            print('Invalid status value')
+            print(new_status)
             return jsonify({
                 'error': 'Invalid status value',
                 'valid_statuses': valid_statuses
@@ -480,6 +488,7 @@ def update_transaction_status():
         if new_status != "pending":
             listing = Listing.query.filter_by(listing_id=transaction.listing_id).first()
             print(listing.seller_id)
+            print(current_user.user_id)
             if listing.seller_id != current_user.user_id:
                 print("unauthorized")
                 return jsonify({'error': 'Unauthorized to update this listing'}), 403
