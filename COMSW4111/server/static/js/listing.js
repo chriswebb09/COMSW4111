@@ -36,7 +36,7 @@ const ListingPage  = (reportDataElems) => {
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="text-sm text-gray-600">
               <a href="/">
-                 <span className="hover:text-gray-900 cursor-pointer">Home</span>
+                <span className="hover:text-gray-900 cursor-pointer">Home</span>
               </a>
               <span className="mx-2">›</span>
               <a href="/search">
@@ -51,19 +51,29 @@ const ListingPage  = (reportDataElems) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title} className="w-full h-96 object-cover"/>
+                <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title}
+                     className="w-full h-96 object-cover"/>
                 <div className="p-4 grid grid-cols-4 gap-2">
-                  <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title} className="w-full h-40 object-cover"/>
+                  <img src={`/api/get-images/${listingData.list_image}`} alt={listing.title}
+                       className="w-full h-40 object-cover"/>
                 </div>
               </div>
               <div className="bg-white rounded-lg shadow-lg overflow-hidden my-6">
-                <div className="m-6">
-                  <a href={`/transaction?listing_id=${listingData.listing_id}`}>
-                    <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
-                      Start Transaction
-                    </button>
-                  </a>
-                </div>
+                {(listingData.status == "active" && listingData.your_listing == false) && (
+                    <div className="m-6">
+                      <a href={`/transaction?listing_id=${listingData.listing_id}`}>
+                        <button
+                            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 shadow-lg transition duration-200 font-medium">
+                          Start Transaction
+                        </button>
+                      </a>
+                    </div>
+                )}
+                {listingData.status !== "active" && (
+                    <div className="m-6">
+                      <h2 className="text-xl font-semibold mb-3">Sale status is {listingData.status}</h2>
+                    </div>
+                )}
               </div>
               <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">{listingData.title}</h1>
@@ -109,7 +119,8 @@ const ListingPage  = (reportDataElems) => {
               <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
                 <div className="mb-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-20 h-20 bg-blue-100 rounded-full text-center flex items-center text-blue-600 font-bold text-xl">
+                    <div
+                        className="w-20 h-20 bg-blue-100 rounded-full text-center flex items-center text-blue-600 font-bold text-xl">
                       {listingData.seller_name}
                     </div>
                     <div className="ml-3">
@@ -118,24 +129,28 @@ const ListingPage  = (reportDataElems) => {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <button onClick={() => setIsContactModalOpen(true)}
-                          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
-                    Contact Seller
-                  </button>
-                  <button
-                      className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
-                    Save to Favorites
-                  </button>
-                  { listingData.your_listing && (
-                    <button onClick={() => setShowDeleteConfirm(true)}
-                            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200 font-medium">
-                      Delete Listing
-                    </button>
+                  {listingData.your_listing == false && (
+                      <button onClick={() => setIsContactModalOpen(true)}
+                              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                        Contact Seller
+                      </button>
+                  )}
+                  {listingData.your_listing == false && (
+                      <button
+                          className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium">
+                        Save to Favorites
+                      </button>
+                  )}
+                  {listingData.your_listing && (
+                      <button onClick={() => setShowDeleteConfirm(true)}
+                              className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition duration-200 font-medium">
+                        Delete Listing
+                      </button>
                   )}
                 </div>
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-500">
-                  <div className="mb-2">Listing ID: {listingData.listing_id}</div>
+                    <div className="mb-2">Listing ID: {listingData.listing_id}</div>
                     <div>Last updated: {new Date(listingData.t_last_edit).toLocaleDateString()}</div>
                   </div>
                 </div>
