@@ -22,11 +22,11 @@ def begin_transaction():
 def transaction_list():
     return render_template('transactions.html', title='Transaction')
 
+
 @bp.route('/api/transaction', methods=['POST'])
 @login_required
 def post_new_transaction():
     data = request.get_json()
-    print(data)
     error_description = ""
     try:
         listing = Listing.query.filter_by(listing_id=data['listing_id']).first()
@@ -36,7 +36,6 @@ def post_new_transaction():
         if transactions:
             error_description = "transaction already exists"
             return jsonify({"error": f"Transactions already exist"}), 500
-        print(listing)
         if listing.seller_id == current_user.user_id:
             error_description = "cannot buy own listing"
             return jsonify({"error": f"Cannot buy your own listing"}), 500
@@ -94,13 +93,17 @@ def get_transactions():
         status = request.args.get('status')
         query = Transaction.query
         if buyer_id:
-            query = query.filter(Transaction.buyer_id == buyer_id)
+            query = query.filter(Transaction.buyer_id == buyer_id and buyer_id == current_user.user_id)
         if seller_id:
-            query = query.filter(Transaction.seller_id == seller_id)
+            query = query.filter(Transaction.seller_id == seller_id and seller_id == current_user.user_id)
         if status:
-            query = query.filter(Transaction.status == status)
+            query = query.filter(Transaction.status == status and (buyer_id == current_user.user_id or seller_id == current_user.user_id))
         query = query.order_by(desc(Transaction.t_date))
         transactions = query.all()
+        filtered_transactions = [
+            transaction for transaction in transactions
+            if transaction.buyer_id == current_user.user_id or transaction.seller_id == current_user.user_id
+        ]
         transactions_list = [{
             'transaction_id': transaction.transaction_id,
             'buyer_id': transaction.buyer_id,
@@ -110,7 +113,7 @@ def get_transactions():
             'agreed_price': str(transaction.agreed_price),  # Convert Decimal to string
             'serv_fee': str(transaction.serv_fee) if transaction.serv_fee else None,  # Handle nullable field
             'status': transaction.status
-        } for transaction in transactions]
+        } for transaction in filtered_transactions]
         return jsonify(transactions_list)
     except Exception as e:
         print(e)
